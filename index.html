@@ -62,34 +62,35 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqwucpIri6CO3iLhJzJljja3g0VBOYZOfvSOuNisP_4MT45xjZPHyUrXYLjnBL8nk/exec";
 
     function fetchCommandes() {
-      fetch(CSV_URL)
-        .then(response => response.text())
-        .then(csv => {
-          const lignes = csv.trim().split("\n").map(l => l.split(","));
-          const headers = lignes[0];
-          const data = lignes.slice(1);
-          const tbody = document.querySelector("#commandeTable tbody");
-          tbody.innerHTML = "";
+      fetch("/.netlify/functions/proxy")
+  .then(response => response.text())
+  .then(csv => {
+    const lignes = csv.trim().split("\n").map(l => l.split(","));
+    const headers = lignes[0];
+    const data = lignes.slice(1);
+    const tbody = document.querySelector("#commandeTable tbody");
+    tbody.innerHTML = "";
 
-          data.forEach((ligne, index) => {
-            const estValidee = ligne[ligne.length - 1].trim().toLowerCase() === "v";
-            if (!estValidee) {
-              const tr = document.createElement("tr");
-              for (let i = 0; i < 6; i++) {
-                const td = document.createElement("td");
-                td.textContent = ligne[i] || "";
-                tr.appendChild(td);
-              }
-              const tdAction = document.createElement("td");
-              const btn = document.createElement("button");
-              btn.textContent = "Commande prête";
-              btn.onclick = () => validerCommande(index + 2); // +2 pour ignorer header (index+1) et header ligne (index+1)
-              tdAction.appendChild(btn);
-              tr.appendChild(tdAction);
-              tbody.appendChild(tr);
-            }
-          });
-        });
+    data.forEach((ligne, index) => {
+      const estValidee = ligne[ligne.length - 1].trim().toLowerCase() === "v";
+      if (!estValidee) {
+        const tr = document.createElement("tr");
+        for (let i = 0; i < 6; i++) {
+          const td = document.createElement("td");
+          td.textContent = ligne[i] || "";
+          tr.appendChild(td);
+        }
+        const tdAction = document.createElement("td");
+        const btn = document.createElement("button");
+        btn.textContent = "Commande prête";
+        btn.onclick = () => validerCommande(index + 2); // +2 pour header
+        tdAction.appendChild(btn);
+        tr.appendChild(tdAction);
+        tbody.appendChild(tr);
+      }
+    });
+  });
+
     }
 
     function validerCommande(rowNumber) {
