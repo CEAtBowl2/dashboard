@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Commandes Pokébowls</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fff8f5;
+      padding: 2em;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #ff3a3a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2em;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 1em;
+      text-align: center;
+    }
+    th {
+      background-color: #ffe5e0;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      padding: 0.5em 1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dashboard Commandes</h1>
+  <table id="commandeTable">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Téléphone</th>
+        <th>Taille</th>
+        <th>Ingrédients</th>
+        <th>Protéines</th>
+        <th>Remarques</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/1Khv_9_qhoEb_05Xt2tbt53xg7d-Q7l6yOjxIxyzNO8Q/export?format=csv";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqwucpIri6CO3iLhJzJljja3g0VBOYZOfvSOuNisP_4MT45xjZPHyUrXYLjnBL8nk/exec";
+
+    function fetchCommandes() {
+      fetch(CSV_URL)
+        .then(response => response.text())
+        .then(csv => {
+          const lignes = csv.trim().split("\n").map(l => l.split(","));
+          const headers = lignes[0];
+          const data = lignes.slice(1);
+          const tbody = document.querySelector("#commandeTable tbody");
+          tbody.innerHTML = "";
+
+          data.forEach((ligne, index) => {
+            const estValidee = ligne[ligne.length - 1].trim().toLowerCase() === "v";
+            if (!estValidee) {
+              const tr = document.createElement("tr");
+              for (let i = 0; i < 6; i++) {
+                const td = document.createElement("td");
+                td.textContent = ligne[i] || "";
+                tr.appendChild(td);
+              }
+              const tdAction = document.createElement("td");
+              const btn = document.createElement("button");
+              btn.textContent = "Commande prête";
+              btn.onclick = () => validerCommande(index + 2); // +2 pour ignorer header (index+1) et header ligne (index+1)
+              tdAction.appendChild(btn);
+              tr.appendChild(tdAction);
+              tbody.appendChild(tr);
+            }
+          });
+        });
+    }
+
+    function validerCommande(rowNumber) {
+      fetch(`${SCRIPT_URL}?row=${rowNumber}`)
+        .then(() => fetchCommandes())
+        .catch(() => alert("Erreur lors de la validation"));
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchCommandes);
+  </script>
+</body>
+</html>
