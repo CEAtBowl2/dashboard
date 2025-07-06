@@ -102,7 +102,7 @@
       if (text.trim().toLowerCase() === "ok") {
         alert("Commande validée !");
         // Petite pause pour que la Google Sheet se mette à jour
-        setTimeout(fetchCommandes, 5000); // Recharge après 1 seconde
+        setTimeout(fetchCommandes, 3000); // Recharge après 1 seconde
       } else {
         alert("Erreur côté script : " + text);
       }
