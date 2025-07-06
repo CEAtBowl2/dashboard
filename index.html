@@ -98,6 +98,12 @@
     button:active {
       transform: scale(0.98);
     }
+    .ligne-base {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
     .ingredient-container {
       display: flex;
       flex-direction: column;
@@ -179,26 +185,31 @@ card.appendChild(taille);
 
 // Base
 const base = document.createElement("div");
-base.className = "info";
-base.innerHTML = `<span class="label">🧾 Base :</span>`;
+base.className = "info ligne-base";
 if (commande["Base"]) {
+  const label = document.createElement("span");
+  label.className = "label";
+  label.textContent = "🧾 Base :";
+  base.appendChild(label);
+
   const container = document.createElement("div");
   container.className = "ingredient-container";
-  
+
   const img = document.createElement("img");
   img.src = `./images/${commande["Base"].toLowerCase().replace(/ /g, "_")}.png`;
   img.alt = commande["Base"];
   img.className = "ingredient-img";
 
-  const label = document.createElement("div");
-  label.textContent = commande["Base"];
-  label.style.fontSize = "0.7em";
+  const labelImg = document.createElement("div");
+  labelImg.textContent = commande["Base"];
+  labelImg.style.fontSize = "0.7em";
 
   container.appendChild(img);
-  container.appendChild(label);
+  container.appendChild(labelImg);
   base.appendChild(container);
 }
 card.appendChild(base);
+
 
 
 // Ingrédients
@@ -228,26 +239,31 @@ card.appendChild(ingGrid);
 
 // Protéines
 const prot = document.createElement("div");
-prot.className = "info";
-prot.innerHTML = `<span class="label">🍗 Protéine :</span>`;
+prot.className = "info ligne-base";
 if (commande["Protéines"]) {
+  const label = document.createElement("span");
+  label.className = "label";
+  label.textContent = "🍗 Protéine :";
+  prot.appendChild(label);
+
   const container = document.createElement("div");
   container.className = "ingredient-container";
-  
+
   const img = document.createElement("img");
   img.src = `./images/${commande["Protéines"].toLowerCase().replace(/ /g, "_")}.png`;
   img.alt = commande["Protéines"];
   img.className = "ingredient-img";
 
-  const label = document.createElement("div");
-  label.textContent = commande["Protéines"];
-  label.style.fontSize = "0.7em";
+  const labelImg = document.createElement("div");
+  labelImg.textContent = commande["Protéines"];
+  labelImg.style.fontSize = "0.7em";
 
   container.appendChild(img);
-  container.appendChild(label);
+  container.appendChild(labelImg);
   prot.appendChild(container);
 }
 card.appendChild(prot);
+
 
 
 // Remarques
