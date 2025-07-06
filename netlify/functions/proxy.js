@@ -1,28 +1,48 @@
 const fetch = require("node-fetch");
 
-exports.handler = async function(event, context) {
+exports.handler = async function (event, context) {
   const url = "https://script.google.com/macros/s/AKfycbxrB5mngVnxm84U6AOZRGgkXjvuXbwLnfZTUUZ20jF8WoQvd2yghATtI2CRyLHfhVI/exec";
 
   try {
-    const response = await fetch(url);
-    const data = await response.json(); // ✅ attend un JSON, comme modifié dans ton code.gs
+    const method = event.httpMethod;
 
-    return {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*", // permet l'accès depuis Netlify
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data), // renvoie l’objet JSON tel quel
-    };
+    if (method === "GET") {
+      const response = await fetch(url);
+      const data = await response.text();
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json",
+        },
+        body: data,
+      };
+    }
+
+    if (method === "POST") {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: event.body,
+      });
+
+      const data = await response.text();
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: data,
+      };
+    }
+
+    return { statusCode: 405, body: "Method Not Allowed" };
   } catch (error) {
     return {
       statusCode: 500,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status: "error", message: "Erreur de proxy", error: error.message }),
+      body: JSON.stringify({ message: "Erreur proxy", error: error.message }),
     };
   }
 };
