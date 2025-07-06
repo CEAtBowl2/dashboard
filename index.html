@@ -168,8 +168,10 @@ container.innerHTML = "";
             if ((commande["Validée"] || "").toLowerCase() !== "v") {
               const card = document.createElement("div");
 card.className = "commande-card";
+              
 const name = document.createElement("h2");
-name.textContent = commande["Nom"] || "";
+const randomId = "#" + Math.floor(100000 + Math.random() * 900000);
+name.textContent = (commande["Nom"] || "") + " " + randomId;
 card.appendChild(name);
 
 const locker = document.createElement("div");
