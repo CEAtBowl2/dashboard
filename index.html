@@ -143,7 +143,6 @@
   <h1>Tableau de commandes Pokébowl</h1>
 
   <div id="commandeTable"></div>
-    <tbody></tbody>
   </table>
 
   <script>
@@ -154,8 +153,9 @@
       fetch(DATA_URL)
         .then(res => res.json())
         .then(data => {
-          const tbody = document.querySelector("#commandeTable tbody");
-          tbody.innerHTML = "";
+         const container = document.getElementById("commandeTable");
+container.innerHTML = "";
+
 
           data.forEach((commande, index) => {
             if ((commande["Validée"] || "").toLowerCase() !== "v") {
@@ -247,7 +247,8 @@ btn.onclick = () => validerCommande(index + 2);
 card.appendChild(btn);
 
 // Ajouter à la page
-tbody.appendChild(card);
+container.appendChild(card);
+
 
             }
           });
