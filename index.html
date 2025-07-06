@@ -4,89 +4,122 @@
   <meta charset="UTF-8" />
   <title>Dashboard Pokébowl</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #fff8f5;
-      padding: 2em;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-      color: #ff3a3a;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 2em;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 1em;
-      text-align: center;
-      vertical-align: middle;
-    }
-    th {
-      background-color: #ffe5e0;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      padding: 0.5em 1em;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .ingredient-container {
+   /* Style général */
+body {
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  background-color: #fefefe;
+  margin: 0;
+  padding: 3em;
+  color: #333;
+}
+
+/* Titre principal */
+h1 {
+  text-align: center;
+  color: #ff3a3a;
+  font-size: 2.5em;
+  letter-spacing: 1px;
+  margin-bottom: 1em;
+}
+
+/* Tableau */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 15px;
+  margin-top: 2em;
+}
+
+th {
+  background-color: #ff3a3a;
+  color: white;
+  padding: 1em;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  border: none;
+  border-radius: 8px 8px 0 0;
+}
+
+td {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 1em;
+  border: none;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+  font-size: 0.9em;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Bouton "Commande prête" */
+button {
+  background-color: #10b981;
+  color: white;
+  padding: 0.6em 1.2em;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9em;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+button:hover {
+  background-color: #0f9b72;
+  transform: scale(1.03);
+}
+button:active {
+  transform: scale(0.98);
+}
+
+/* Cartes ingrédient / base / protéine */
+.ingredient-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: #fdfdfd;
   border-radius: 10px;
   padding: 10px;
   margin: 5px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
   width: 80px;
   height: 100px;
   box-sizing: border-box;
+  transition: transform 0.2s ease;
+}
+.ingredient-container:hover {
+  transform: translateY(-3px);
 }
 
 .ingredient-img {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   margin-bottom: 6px;
 }
-.ingredient-container {
-  width: 70px;
-  height: 90px;
-  padding: 8px;
+
+/* Responsive : tablette & mobile */
+@media (max-width: 900px) {
+  body {
+    padding: 1em;
+  }
+
+  table, th, td {
+    font-size: 0.85em;
+  }
+
+  .ingredient-container {
+    width: 60px;
+    height: 80px;
+  }
+
+  h1 {
+    font-size: 2em;
+  }
 }
 
-
-    
-  </style>
-</head>
-<body>
-  <h1>Dashboard Commandes</h1>
-  <table id="commandeTable">
-    <thead>
-      <tr>
-        <th>Nom</th>
-        <th>Téléphone</th>
-        <th>Taille</th>
-        <th>Base</th>
-        <th>Ingrédients</th>
-        <th>Protéines</th>
-        <th>Remarques</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
 
   <script>
     const DATA_URL = "/.netlify/functions/proxy";
