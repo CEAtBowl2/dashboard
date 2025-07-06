@@ -23,6 +23,7 @@
       border: 1px solid #ddd;
       padding: 1em;
       text-align: center;
+      vertical-align: middle;
     }
     th {
       background-color: #ffe5e0;
@@ -37,6 +38,16 @@
     }
     button:hover {
       background-color: #45a049;
+    }
+    .ingredient-img {
+      width: 40px;
+      display: block;
+      margin: 0 auto 4px;
+    }
+    .ingredient-container {
+      display: inline-block;
+      margin: 5px;
+      text-align: center;
     }
   </style>
 </head>
@@ -59,9 +70,8 @@
   </table>
 
   <script>
-    const SCRIPT_ID = "AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw"; // 🔁 Remplace par l'ID de ton script Apps Script
     const DATA_URL = "/.netlify/functions/proxy";
-    const VALIDATION_URL = `https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec`;
+    const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
 
     function fetchCommandes() {
       fetch(DATA_URL)
@@ -73,15 +83,67 @@
           data.forEach((commande, index) => {
             if ((commande["Validée"] || "").toLowerCase() !== "v") {
               const tr = document.createElement("tr");
-              tr.innerHTML = `
-                <td>${commande["Nom"] || ""}</td>
-                <td>${commande["Téléphone"] || ""}</td>
-                <td>${commande["Taille"] || ""}</td>
-                <td>${commande["Ingrédients"] || ""}</td>
-                <td>${commande["Protéines"] || ""}</td>
-                <td>${commande["Remarques"] || ""}</td>
-                <td><button onclick="validerCommande(${index + 2})">Commande prête</button></td>
-              `;
+
+              // Nom
+              const tdNom = document.createElement("td");
+              tdNom.textContent = commande["Nom"] || "";
+              tr.appendChild(tdNom);
+
+              // Téléphone
+              const tdTel = document.createElement("td");
+              tdTel.textContent = commande["Téléphone"] || "";
+              tr.appendChild(tdTel);
+
+              // Taille
+              const tdTaille = document.createElement("td");
+              tdTaille.textContent = commande["Taille"] || "";
+              tr.appendChild(tdTaille);
+
+              // Base
+              const tdBase = document.createElement("td");
+              tdBase.textContent = commande["Base"] || "";
+              tr.appendChild(tdBase);
+
+              // Ingrédients
+              const tdIngr = document.createElement("td");
+              const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim());
+              ingredients.forEach(ingredient => {
+                const container = document.createElement("div");
+                container.className = "ingredient-container";
+
+                const img = document.createElement("img");
+                img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
+                img.alt = ingredient;
+                img.className = "ingredient-img";
+
+                const label = document.createElement("div");
+                label.textContent = ingredient;
+                label.style.fontSize = "0.8em";
+
+                container.appendChild(img);
+                container.appendChild(label);
+                tdIngr.appendChild(container);
+              });
+              tr.appendChild(tdIngr);
+
+              // Protéines
+              const tdProt = document.createElement("td");
+              tdProt.textContent = commande["Protéines"] || "";
+              tr.appendChild(tdProt);
+
+              // Remarques
+              const tdRem = document.createElement("td");
+              tdRem.textContent = commande["Remarques"] || "";
+              tr.appendChild(tdRem);
+
+              // Bouton
+              const tdAction = document.createElement("td");
+              const btn = document.createElement("button");
+              btn.textContent = "Commande prête";
+              btn.onclick = () => validerCommande(index + 2);
+              tdAction.appendChild(btn);
+              tr.appendChild(tdAction);
+
               tbody.appendChild(tr);
             }
           });
@@ -93,27 +155,22 @@
     }
 
     function validerCommande(rowNumber) {
-  const url = `${VALIDATION_URL}?action=valider&row=${rowNumber}`;
-  console.log("Envoi de validation vers :", url);
-
-  fetch(url)
-    .then(res => res.text())
-    .then(text => {
-      console.log("Réponse du script :", text);
-      if (text.trim().toLowerCase() === "ok") {
-        alert("Commande validée !");
-        // Petite pause pour que la Google Sheet se mette à jour
-        setTimeout(fetchCommandes, 1000); // Recharge après 1 seconde
-      } else {
-        alert("Erreur côté script : " + text);
-      }
-    })
-    .catch(error => {
-      console.error("Erreur réseau :", error);
-      alert("Erreur réseau lors de la validation.");
-    });
-}
-
+      const url = `${VALIDATION_URL}?action=valider&row=${rowNumber}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(text => {
+          if (text.trim().toLowerCase() === "ok") {
+            alert("Commande validée !");
+            setTimeout(fetchCommandes, 1000);
+          } else {
+            alert("Erreur côté script : " + text);
+          }
+        })
+        .catch(error => {
+          console.error("Erreur réseau :", error);
+          alert("Erreur réseau lors de la validation.");
+        });
+    }
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
   </script>
