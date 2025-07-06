@@ -182,16 +182,24 @@ const base = document.createElement("div");
 base.className = "info";
 base.innerHTML = `<span class="label">🧾 Base :</span>`;
 if (commande["Base"]) {
-  const baseText = document.createElement("span");
-  baseText.textContent = ` ${commande["Base"]}`;
+  const container = document.createElement("div");
+  container.className = "ingredient-container";
+  
   const img = document.createElement("img");
   img.src = `./images/${commande["Base"].toLowerCase().replace(/ /g, "_")}.png`;
   img.alt = commande["Base"];
   img.className = "ingredient-img";
-  base.appendChild(img);
-  base.appendChild(baseText);
+
+  const label = document.createElement("div");
+  label.textContent = commande["Base"];
+  label.style.fontSize = "0.7em";
+
+  container.appendChild(img);
+  container.appendChild(label);
+  base.appendChild(container);
 }
 card.appendChild(base);
+
 
 // Ingrédients
 const ingLabel = document.createElement("div");
@@ -223,16 +231,24 @@ const prot = document.createElement("div");
 prot.className = "info";
 prot.innerHTML = `<span class="label">🍗 Protéine :</span>`;
 if (commande["Protéines"]) {
-  const protText = document.createElement("span");
-  protText.textContent = ` ${commande["Protéines"]}`;
-  const protImg = document.createElement("img");
-  protImg.src = `./images/${commande["Protéines"].toLowerCase().replace(/ /g, "_")}.png`;
-  protImg.alt = commande["Protéines"];
-  protImg.className = "ingredient-img";
-  prot.appendChild(protImg);
-  prot.appendChild(protText);
+  const container = document.createElement("div");
+  container.className = "ingredient-container";
+  
+  const img = document.createElement("img");
+  img.src = `./images/${commande["Protéines"].toLowerCase().replace(/ /g, "_")}.png`;
+  img.alt = commande["Protéines"];
+  img.className = "ingredient-img";
+
+  const label = document.createElement("div");
+  label.textContent = commande["Protéines"];
+  label.style.fontSize = "0.7em";
+
+  container.appendChild(img);
+  container.appendChild(label);
+  prot.appendChild(container);
 }
 card.appendChild(prot);
+
 
 // Remarques
 const remarques = document.createElement("div");
