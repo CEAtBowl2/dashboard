@@ -5,19 +5,24 @@ exports.handler = async function(event, context) {
 
   try {
     const response = await fetch(url);
-    const data = await response.text(); // ou response.json() si ton script renvoie du JSON
+    const data = await response.json(); // ✅ attend un JSON, comme modifié dans ton code.gs
+
     return {
       statusCode: 200,
       headers: {
-        "Access-Control-Allow-Origin": "*", // Optionnel si ton site est sur le même domaine Netlify
+        "Access-Control-Allow-Origin": "*", // permet l'accès depuis Netlify
         "Content-Type": "application/json",
       },
-      body: data,
+      body: JSON.stringify(data), // renvoie l’objet JSON tel quel
     };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "Erreur de proxy", error: error.message }),
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status: "error", message: "Erreur de proxy", error: error.message }),
     };
   }
 };
