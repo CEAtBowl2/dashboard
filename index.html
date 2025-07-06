@@ -39,28 +39,28 @@
     button:hover {
       background-color: #45a049;
     }
-    .ingredient-img {
-      width: 40px;
-      display: block;
-      margin: 0 auto 4px;
-    }
     .ingredient-container {
-      display: inline-block;
-      margin: 5px;
-      text-align: center;
-    }
-  .ingredient-container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  width: 80px;
+  height: 100px;
+  box-sizing: border-box;
 }
 
 .ingredient-img {
   width: 40px;
   height: 40px;
   object-fit: contain;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
+
 
     
   </style>
@@ -173,7 +173,12 @@ if (prot) {
   protLabel.textContent = prot;
   protLabel.style.fontSize = "0.8em";
 
-  protContainer.appendCh
+  protContainer.appendChild(protImg);
+  protContainer.appendChild(protLabel);
+  tdProt.appendChild(protContainer);
+}
+tr.appendChild(tdProt);
+
 
 
               // Remarques
