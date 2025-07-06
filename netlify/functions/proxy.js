@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 
 exports.handler = async function (event, context) {
-  const url = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
+  const url = "https://script.google.com/macros/s/AKfycbzCVjzxxVnAU63fItWFAL_qsuF52rzjqu7UeqhKwzgXRjwTw2XgLnQd-CxRQmETjRI/exec";
 
   try {
     const method = event.httpMethod;
