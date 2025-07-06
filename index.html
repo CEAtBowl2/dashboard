@@ -95,18 +95,18 @@
         });
     }
 
-    function validerCommande(rowNumber) {
-  fetch("/.netlify/functions/proxy", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ row: rowNumber })
-  })
-  .then(response => response.text())
-  .then(() => fetchCommandes())
-  .catch(() => alert("Erreur lors de la validation"));
-}
+      function validerCommande(rowNumber) {
+    fetch(`${SCRIPT_URL}?row=${rowNumber}`)
+      .then(response => response.text())
+      .then(result => {
+        if (result.trim() === "ok") {
+          setTimeout(fetchCommandes, 1000); // délai de 1 seconde
+        } else {
+          alert("Erreur lors de la validation");
+        }
+      })
+      .catch(() => alert("Erreur lors de la validation"));
+  }
 
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
