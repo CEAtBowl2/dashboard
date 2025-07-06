@@ -4,122 +4,125 @@
   <meta charset="UTF-8" />
   <title>Dashboard Pokébowl</title>
   <style>
-   /* Style général */
-body {
-  font-family: 'Segoe UI', Roboto, sans-serif;
-  background-color: #fefefe;
-  margin: 0;
-  padding: 3em;
-  color: #333;
-}
+    /* Ton CSS ici (inchangé car déjà optimisé) */
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: #fefefe;
+      margin: 0;
+      padding: 3em;
+      color: #333;
+    }
+    h1 {
+      text-align: center;
+      color: #ff3a3a;
+      font-size: 2.5em;
+      letter-spacing: 1px;
+      margin-bottom: 1em;
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 15px;
+      margin-top: 2em;
+    }
+    th {
+      background-color: #ff3a3a;
+      color: white;
+      padding: 1em;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.85em;
+      border: none;
+      border-radius: 8px 8px 0 0;
+    }
+    td {
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      padding: 1em;
+      border: none;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+      font-size: 0.9em;
+      border-radius: 0 0 8px 8px;
+    }
+    button {
+      background-color: #10b981;
+      color: white;
+      padding: 0.6em 1.2em;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9em;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    button:hover {
+      background-color: #0f9b72;
+      transform: scale(1.03);
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    .ingredient-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #fdfdfd;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 5px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+      width: 80px;
+      height: 100px;
+      box-sizing: border-box;
+      transition: transform 0.2s ease;
+    }
+    .ingredient-container:hover {
+      transform: translateY(-3px);
+    }
+    .ingredient-img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      margin-bottom: 6px;
+    }
+    @media (max-width: 900px) {
+      body {
+        padding: 1em;
+      }
+      table, th, td {
+        font-size: 0.85em;
+      }
+      .ingredient-container {
+        width: 60px;
+        height: 80px;
+      }
+      h1 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Tableau de commandes Pokébowl</h1>
 
-/* Titre principal */
-h1 {
-  text-align: center;
-  color: #ff3a3a;
-  font-size: 2.5em;
-  letter-spacing: 1px;
-  margin-bottom: 1em;
-}
-
-/* Tableau */
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 15px;
-  margin-top: 2em;
-}
-
-th {
-  background-color: #ff3a3a;
-  color: white;
-  padding: 1em;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85em;
-  border: none;
-  border-radius: 8px 8px 0 0;
-}
-
-td {
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  padding: 1em;
-  border: none;
-  border-bottom: 1px solid #eee;
-  vertical-align: middle;
-  font-size: 0.9em;
-  border-radius: 0 0 8px 8px;
-}
-
-/* Bouton "Commande prête" */
-button {
-  background-color: #10b981;
-  color: white;
-  padding: 0.6em 1.2em;
-  border: none;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9em;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-button:hover {
-  background-color: #0f9b72;
-  transform: scale(1.03);
-}
-button:active {
-  transform: scale(0.98);
-}
-
-/* Cartes ingrédient / base / protéine */
-.ingredient-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #fdfdfd;
-  border-radius: 10px;
-  padding: 10px;
-  margin: 5px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-  width: 80px;
-  height: 100px;
-  box-sizing: border-box;
-  transition: transform 0.2s ease;
-}
-.ingredient-container:hover {
-  transform: translateY(-3px);
-}
-
-.ingredient-img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-  margin-bottom: 6px;
-}
-
-/* Responsive : tablette & mobile */
-@media (max-width: 900px) {
-  body {
-    padding: 1em;
-  }
-
-  table, th, td {
-    font-size: 0.85em;
-  }
-
-  .ingredient-container {
-    width: 60px;
-    height: 80px;
-  }
-
-  h1 {
-    font-size: 2em;
-  }
-}
-
+  <table id="commandeTable">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Téléphone</th>
+        <th>Taille</th>
+        <th>Base</th>
+        <th>Ingrédients</th>
+        <th>Protéines</th>
+        <th>Remarques</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     const DATA_URL = "/.netlify/functions/proxy";
@@ -136,106 +139,82 @@ button:active {
             if ((commande["Validée"] || "").toLowerCase() !== "v") {
               const tr = document.createElement("tr");
 
-              // Nom
               const tdNom = document.createElement("td");
               tdNom.textContent = commande["Nom"] || "";
               tr.appendChild(tdNom);
 
-              // Téléphone
               const tdTel = document.createElement("td");
               tdTel.textContent = commande["Téléphone"] || "";
               tr.appendChild(tdTel);
 
-              // Taille
               const tdTaille = document.createElement("td");
               tdTaille.textContent = commande["Taille"] || "";
               tr.appendChild(tdTaille);
 
-              // Base
               const tdBase = document.createElement("td");
-const base = commande["Base"] || "";
-if (base) {
-  const baseContainer = document.createElement("div");
-  baseContainer.className = "ingredient-container"; // même style que les ingrédients
+              const base = commande["Base"] || "";
+              if (base) {
+                const baseContainer = document.createElement("div");
+                baseContainer.className = "ingredient-container";
+                const baseImg = document.createElement("img");
+                baseImg.src = `./images/${base.toLowerCase().replace(/ /g, "_")}.png`;
+                baseImg.alt = base;
+                baseImg.className = "ingredient-img";
+                const baseLabel = document.createElement("div");
+                baseLabel.textContent = base;
+                baseLabel.style.fontSize = "0.8em";
+                baseContainer.appendChild(baseImg);
+                baseContainer.appendChild(baseLabel);
+                tdBase.appendChild(baseContainer);
+              }
+              tr.appendChild(tdBase);
 
-  const baseImg = document.createElement("img");
-  baseImg.src = `./images/${base.toLowerCase().replace(/ /g, "_")}.png`;
-  baseImg.alt = base;
-  baseImg.className = "ingredient-img";
+              const tdIngr = document.createElement("td");
+              const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim()).filter(i => i);
+              const gridContainer = document.createElement("div");
+              gridContainer.style.display = "grid";
+              gridContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
+              gridContainer.style.gap = "8px";
+              gridContainer.style.justifyItems = "center";
+              ingredients.slice(0, 6).forEach(ingredient => {
+                const container = document.createElement("div");
+                container.className = "ingredient-container";
+                const img = document.createElement("img");
+                img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
+                img.alt = ingredient;
+                img.className = "ingredient-img";
+                const label = document.createElement("div");
+                label.textContent = ingredient;
+                label.style.fontSize = "0.8em";
+                container.appendChild(img);
+                container.appendChild(label);
+                gridContainer.appendChild(container);
+              });
+              tdIngr.appendChild(gridContainer);
+              tr.appendChild(tdIngr);
 
-  const baseLabel = document.createElement("div");
-  baseLabel.textContent = base;
-  baseLabel.style.fontSize = "0.8em";
+              const tdProt = document.createElement("td");
+              const prot = commande["Protéines"] || "";
+              if (prot) {
+                const protContainer = document.createElement("div");
+                protContainer.className = "ingredient-container";
+                const protImg = document.createElement("img");
+                protImg.src = `./images/${prot.toLowerCase().replace(/ /g, "_")}.png`;
+                protImg.alt = prot;
+                protImg.className = "ingredient-img";
+                const protLabel = document.createElement("div");
+                protLabel.textContent = prot;
+                protLabel.style.fontSize = "0.8em";
+                protContainer.appendChild(protImg);
+                protContainer.appendChild(protLabel);
+                tdProt.appendChild(protContainer);
+              }
+              tr.appendChild(tdProt);
 
-  baseContainer.appendChild(baseImg);
-  baseContainer.appendChild(baseLabel);
-  tdBase.appendChild(baseContainer);
-}
-tr.appendChild(tdBase);
-
-              // Ingrédients (en cartes, 2 lignes de 3 max)
-const tdIngr = document.createElement("td");
-const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim()).filter(i => i);
-
-// Conteneur principal
-const gridContainer = document.createElement("div");
-gridContainer.style.display = "grid";
-gridContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
-gridContainer.style.gap = "8px";
-gridContainer.style.justifyItems = "center";
-
-ingredients.slice(0, 6).forEach(ingredient => {
-  const container = document.createElement("div");
-  container.className = "ingredient-container";
-
-  const img = document.createElement("img");
-  img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
-  img.alt = ingredient;
-  img.className = "ingredient-img";
-
-  const label = document.createElement("div");
-  label.textContent = ingredient;
-  label.style.fontSize = "0.8em";
-
-  container.appendChild(img);
-  container.appendChild(label);
-  gridContainer.appendChild(container);
-});
-
-tdIngr.appendChild(gridContainer);
-tr.appendChild(tdIngr);
-
-
-              // Protéines (avec image + nom)
-const tdProt = document.createElement("td");
-const prot = commande["Protéines"] || "";
-if (prot) {
-  const protContainer = document.createElement("div");
-  protContainer.className = "ingredient-container";
-
-  const protImg = document.createElement("img");
-  protImg.src = `./images/${prot.toLowerCase().replace(/ /g, "_")}.png`;
-  protImg.alt = prot;
-  protImg.className = "ingredient-img";
-
-  const protLabel = document.createElement("div");
-  protLabel.textContent = prot;
-  protLabel.style.fontSize = "0.8em";
-
-  protContainer.appendChild(protImg);
-  protContainer.appendChild(protLabel);
-  tdProt.appendChild(protContainer);
-}
-tr.appendChild(tdProt);
-
-
-
-              // Remarques
               const tdRem = document.createElement("td");
               tdRem.textContent = commande["Remarques"] || "";
               tr.appendChild(tdRem);
 
-              // Bouton
               const tdAction = document.createElement("td");
               const btn = document.createElement("button");
               btn.textContent = "Commande prête";
