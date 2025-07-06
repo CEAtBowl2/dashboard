@@ -142,7 +142,7 @@
 <body>
   <h1>Tableau de commandes Pokébowl</h1>
 
-  <table id="commandeTable">
+  <div id="commandeTable"></div>
     <tbody></tbody>
   </table>
 
@@ -177,16 +177,19 @@ taille.className = "info";
 taille.innerHTML = `<span class="label">🥣 Taille :</span> <strong>${commande["Taille"] || ""}</strong>`;
 card.appendChild(taille);
 
+// Base
 const base = document.createElement("div");
 base.className = "info";
 base.innerHTML = `<span class="label">🧾 Base :</span>`;
 if (commande["Base"]) {
+  const baseText = document.createElement("span");
+  baseText.textContent = ` ${commande["Base"]}`;
   const img = document.createElement("img");
   img.src = `./images/${commande["Base"].toLowerCase().replace(/ /g, "_")}.png`;
   img.alt = commande["Base"];
   img.className = "ingredient-img";
   base.appendChild(img);
-  base.innerHTML += ` ${commande["Base"]}`;
+  base.appendChild(baseText);
 }
 card.appendChild(base);
 
@@ -215,17 +218,19 @@ ingredients.slice(0, 6).forEach(ingredient => {
 });
 card.appendChild(ingGrid);
 
-// Protéine
+// Protéines
 const prot = document.createElement("div");
 prot.className = "info";
 prot.innerHTML = `<span class="label">🍗 Protéine :</span>`;
 if (commande["Protéines"]) {
+  const protText = document.createElement("span");
+  protText.textContent = ` ${commande["Protéines"]}`;
   const protImg = document.createElement("img");
   protImg.src = `./images/${commande["Protéines"].toLowerCase().replace(/ /g, "_")}.png`;
   protImg.alt = commande["Protéines"];
   protImg.className = "ingredient-img";
   prot.appendChild(protImg);
-  prot.innerHTML += ` ${commande["Protéines"]}`;
+  prot.appendChild(protText);
 }
 card.appendChild(prot);
 
