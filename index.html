@@ -168,14 +168,15 @@ container.innerHTML = "";
             if ((commande["Validée"] || "").toLowerCase() !== "v") {
               const card = document.createElement("div");
 card.className = "commande-card";
+const name = document.createElement("h2");
+name.textContent = commande["Nom"] || "";
+card.appendChild(name);
+
 const locker = document.createElement("div");
 locker.className = "info";
 locker.innerHTML = `<span class="label">📦 Locker :</span> ${commande["Locker"] || "–"}`;
 card.appendChild(locker);
 
-const name = document.createElement("h2");
-name.textContent = commande["Nom"] || "";
-card.appendChild(name);
 
 
            const tel = document.createElement("div");
