@@ -182,6 +182,11 @@ card.appendChild(name);
 tel.className = "info";
 tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${commande["Téléphone"] || ""}`;
 card.appendChild(tel);
+              
+const horaire = document.createElement("div");
+horaire.className = "info";
+horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${commande["Horaire"] || ""}</strong>`;
+card.appendChild(horaire);
 
 const taille = document.createElement("div");
 taille.className = "info";
