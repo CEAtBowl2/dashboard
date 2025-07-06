@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Commandes Pokébowls</title>
+  <title>Commandes Pokébowl</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -58,39 +58,41 @@
   </table>
 
   <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/1Khv_9_qhoEb_05Xt2tbt53xg7d-Q7l6yOjxIxyzNO8Q/export?format=csv";
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqwucpIri6CO3iLhJzJljja3g0VBOYZOfvSOuNisP_4MT45xjZPHyUrXYLjnBL8nk/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/TON_ID_SCRIPT/exec"; // à adapter
+    const champs = ["Nom", "Téléphone", "Taille", "Ingrédients", "Protéines", "Remarques"];
 
     function fetchCommandes() {
-      fetch("/.netlify/functions/proxy")
-  .then(response => response.text())
-  .then(csv => {
-    const lignes = csv.trim().split("\n").map(l => l.split(","));
-    const headers = lignes[0];
-    const data = lignes.slice(1);
-    const tbody = document.querySelector("#commandeTable tbody");
-    tbody.innerHTML = "";
+      fetch("/api")
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.querySelector("#commandeTable tbody");
+          tbody.innerHTML = "";
 
-    data.forEach((ligne, index) => {
-      const estValidee = ligne[ligne.length - 1].trim().toLowerCase() === "v";
-      if (!estValidee) {
-        const tr = document.createElement("tr");
-        for (let i = 0; i < 6; i++) {
-          const td = document.createElement("td");
-          td.textContent = ligne[i] || "";
-          tr.appendChild(td);
-        }
-        const tdAction = document.createElement("td");
-        const btn = document.createElement("button");
-        btn.textContent = "Commande prête";
-        btn.onclick = () => validerCommande(index + 2); // +2 pour header
-        tdAction.appendChild(btn);
-        tr.appendChild(tdAction);
-        tbody.appendChild(tr);
-      }
-    });
-  });
+          data.forEach((ligne, index) => {
+            if ((ligne["Validée"] || "").toLowerCase() !== "v") {
+              const tr = document.createElement("tr");
 
+              champs.forEach(champ => {
+                const td = document.createElement("td");
+                td.textContent = ligne[champ] || "";
+                tr.appendChild(td);
+              });
+
+              const tdAction = document.createElement("td");
+              const btn = document.createElement("button");
+              btn.textContent = "Commande prête";
+              btn.onclick = () => validerCommande(index + 2); // +2 pour l'index réel dans Sheets
+              tdAction.appendChild(btn);
+              tr.appendChild(tdAction);
+
+              tbody.appendChild(tr);
+            }
+          });
+        })
+        .catch(err => {
+          console.error("Erreur fetch /api :", err);
+          alert("Erreur lors du chargement des commandes");
+        });
     }
 
     function validerCommande(rowNumber) {
