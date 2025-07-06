@@ -96,7 +96,7 @@
     }
 
   function validerCommande(rowNumber) {
-  fetch(`${SCRIPT_URL}?row=${rowNumber}`)
+ fetch(`${SCRIPT_URL}?action=valider&row=${rowNumber}`)
     .then(response => response.text())
     .then(result => {
       if (result.trim() === "ok") {
