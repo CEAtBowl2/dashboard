@@ -59,7 +59,7 @@
 
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxrB5mngVnxm84U6AOZRGgkXjvuXbwLnfZTUUZ20jF8WoQvd2yghATtI2CRyLHfhVI/exec"; // à adapter
-    const champs = ["Nom", "Téléphone", "Taille", "Ingrédients", "Protéines", "Remarques"];
+    const champs = ["Nom", "Téléphone", "Taille", "Base", "Ingrédients", "Protéines", "Remarques"];
 
     function fetchCommandes() {
       fetch("/api")
@@ -95,19 +95,31 @@
         });
     }
 
-  function validerCommande(rowNumber, buttonElement) {
-    fetch(`${SCRIPT_URL}?row=${rowNumber}`)
-      .then(response => response.text())
-      .then(result => {
-        if (result.trim() === "ok") {
-          const row = buttonElement.closest("tr");
-          row.remove(); // Supprime la ligne de la table directement
-        } else {
-          alert("Erreur lors de la validation");
-        }
-      })
-      .catch(() => alert("Erreur lors de la validation"));
-  }
+  function validerCommande(rowNumber) {
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "row=" + encodeURIComponent(rowNumber)
+  })
+  .then(response => response.text())
+  .then(result => {
+    if (result.trim() === "ok") {
+      // Laisse le temps à Google Sheet de se mettre à jour
+      setTimeout(() => {
+        fetchCommandes(); // Recharge les commandes à jour
+      }, 500); 
+    } else {
+      alert("Erreur lors de la validation : " + result);
+    }
+  })
+  .catch(error => {
+    console.error("Erreur réseau :", error);
+    alert("Erreur réseau lors de la validation");
+  });
+}
+
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
   </script>
