@@ -19,32 +19,66 @@
       letter-spacing: 1px;
       margin-bottom: 1em;
     }
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0 15px;
-      margin-top: 2em;
-    }
-    th {
-      background-color: #ff3a3a;
-      color: white;
-      padding: 1em;
-      font-weight: 600;
-      text-transform: uppercase;
-      font-size: 0.85em;
-      border: none;
-      border-radius: 8px 8px 0 0;
-    }
-    td {
-      background-color: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      padding: 1em;
-      border: none;
-      border-bottom: 1px solid #eee;
-      vertical-align: middle;
-      font-size: 0.9em;
-      border-radius: 0 0 8px 8px;
-    }
+    #commandeTable {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 0;
+  list-style: none;
+}
+
+.commande-card {
+  width: 300px;
+  background: #ffffff;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 1.2em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.9em;
+  border: 1px solid #f0f0f0;
+}
+
+.commande-card h2 {
+  text-align: center;
+  margin: 0 0 0.5em 0;
+  font-size: 1.3em;
+  color: #ff3a3a;
+}
+
+.commande-card .info {
+  margin-bottom: 0.5em;
+  border-bottom: 1px dashed #ddd;
+  padding-bottom: 0.5em;
+}
+
+.commande-card .label {
+  font-weight: bold;
+  display: inline-block;
+  min-width: 80px;
+}
+
+.commande-card .ingredient-container {
+  width: 70px;
+  height: 90px;
+  margin: 5px;
+}
+
+.commande-card .ingredients-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.commande-card button {
+  align-self: center;
+  margin-top: 1em;
+}
+
     button {
       background-color: #10b981;
       color: white;
@@ -137,92 +171,91 @@
 
           data.forEach((commande, index) => {
             if ((commande["Validée"] || "").toLowerCase() !== "v") {
-              const tr = document.createElement("tr");
+              const card = document.createElement("div");
+card.className = "commande-card";
 
-              const tdNom = document.createElement("td");
-              tdNom.textContent = commande["Nom"] || "";
-              tr.appendChild(tdNom);
+const name = document.createElement("h2");
+name.textContent = commande["Nom"] || "";
+card.appendChild(name);
 
-              const tdTel = document.createElement("td");
-              tdTel.textContent = commande["Téléphone"] || "";
-              tr.appendChild(tdTel);
 
-              const tdTaille = document.createElement("td");
-              tdTaille.textContent = commande["Taille"] || "";
-              tr.appendChild(tdTaille);
+           const tel = document.createElement("div");
+tel.className = "info";
+tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${commande["Téléphone"] || ""}`;
+card.appendChild(tel);
 
-              const tdBase = document.createElement("td");
-              const base = commande["Base"] || "";
-              if (base) {
-                const baseContainer = document.createElement("div");
-                baseContainer.className = "ingredient-container";
-                const baseImg = document.createElement("img");
-                baseImg.src = `./images/${base.toLowerCase().replace(/ /g, "_")}.png`;
-                baseImg.alt = base;
-                baseImg.className = "ingredient-img";
-                const baseLabel = document.createElement("div");
-                baseLabel.textContent = base;
-                baseLabel.style.fontSize = "0.8em";
-                baseContainer.appendChild(baseImg);
-                baseContainer.appendChild(baseLabel);
-                tdBase.appendChild(baseContainer);
-              }
-              tr.appendChild(tdBase);
+const taille = document.createElement("div");
+taille.className = "info";
+taille.innerHTML = `<span class="label">🥣 Taille :</span> <strong>${commande["Taille"] || ""}</strong>`;
+card.appendChild(taille);
 
-              const tdIngr = document.createElement("td");
-              const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim()).filter(i => i);
-              const gridContainer = document.createElement("div");
-              gridContainer.style.display = "grid";
-              gridContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
-              gridContainer.style.gap = "8px";
-              gridContainer.style.justifyItems = "center";
-              ingredients.slice(0, 6).forEach(ingredient => {
-                const container = document.createElement("div");
-                container.className = "ingredient-container";
-                const img = document.createElement("img");
-                img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
-                img.alt = ingredient;
-                img.className = "ingredient-img";
-                const label = document.createElement("div");
-                label.textContent = ingredient;
-                label.style.fontSize = "0.8em";
-                container.appendChild(img);
-                container.appendChild(label);
-                gridContainer.appendChild(container);
-              });
-              tdIngr.appendChild(gridContainer);
-              tr.appendChild(tdIngr);
+const base = document.createElement("div");
+base.className = "info";
+base.innerHTML = `<span class="label">🧾 Base :</span>`;
+if (commande["Base"]) {
+  const img = document.createElement("img");
+  img.src = `./images/${commande["Base"].toLowerCase().replace(/ /g, "_")}.png`;
+  img.alt = commande["Base"];
+  img.className = "ingredient-img";
+  base.appendChild(img);
+  base.innerHTML += ` ${commande["Base"]}`;
+}
+card.appendChild(base);
 
-              const tdProt = document.createElement("td");
-              const prot = commande["Protéines"] || "";
-              if (prot) {
-                const protContainer = document.createElement("div");
-                protContainer.className = "ingredient-container";
-                const protImg = document.createElement("img");
-                protImg.src = `./images/${prot.toLowerCase().replace(/ /g, "_")}.png`;
-                protImg.alt = prot;
-                protImg.className = "ingredient-img";
-                const protLabel = document.createElement("div");
-                protLabel.textContent = prot;
-                protLabel.style.fontSize = "0.8em";
-                protContainer.appendChild(protImg);
-                protContainer.appendChild(protLabel);
-                tdProt.appendChild(protContainer);
-              }
-              tr.appendChild(tdProt);
+// Ingrédients
+const ingLabel = document.createElement("div");
+ingLabel.className = "label";
+ingLabel.textContent = "🥗 Ingrédients :";
+card.appendChild(ingLabel);
 
-              const tdRem = document.createElement("td");
-              tdRem.textContent = commande["Remarques"] || "";
-              tr.appendChild(tdRem);
+const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim()).filter(i => i);
+const ingGrid = document.createElement("div");
+ingGrid.className = "ingredients-grid";
+ingredients.slice(0, 6).forEach(ingredient => {
+  const container = document.createElement("div");
+  container.className = "ingredient-container";
+  const img = document.createElement("img");
+  img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
+  img.alt = ingredient;
+  img.className = "ingredient-img";
+  const label = document.createElement("div");
+  label.textContent = ingredient;
+  label.style.fontSize = "0.7em";
+  container.appendChild(img);
+  container.appendChild(label);
+  ingGrid.appendChild(container);
+});
+card.appendChild(ingGrid);
 
-              const tdAction = document.createElement("td");
-              const btn = document.createElement("button");
-              btn.textContent = "Commande prête";
-              btn.onclick = () => validerCommande(index + 2);
-              tdAction.appendChild(btn);
-              tr.appendChild(tdAction);
+// Protéine
+const prot = document.createElement("div");
+prot.className = "info";
+prot.innerHTML = `<span class="label">🍗 Protéine :</span>`;
+if (commande["Protéines"]) {
+  const protImg = document.createElement("img");
+  protImg.src = `./images/${commande["Protéines"].toLowerCase().replace(/ /g, "_")}.png`;
+  protImg.alt = commande["Protéines"];
+  protImg.className = "ingredient-img";
+  prot.appendChild(protImg);
+  prot.innerHTML += ` ${commande["Protéines"]}`;
+}
+card.appendChild(prot);
 
-              tbody.appendChild(tr);
+// Remarques
+const remarques = document.createElement("div");
+remarques.className = "info";
+remarques.innerHTML = `<span class="label">📝 Remarques :</span> ${commande["Remarques"] || ""}`;
+card.appendChild(remarques);
+
+// Bouton
+const btn = document.createElement("button");
+btn.textContent = "Commande prête";
+btn.onclick = () => validerCommande(index + 2);
+card.appendChild(btn);
+
+// Ajouter à la page
+tbody.appendChild(card);
+
             }
           });
         })
