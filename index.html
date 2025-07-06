@@ -60,6 +60,11 @@
   object-fit: contain;
   margin-bottom: 6px;
 }
+.ingredient-container {
+  width: 70px;
+  height: 90px;
+  padding: 8px;
+}
 
 
     
@@ -135,27 +140,38 @@ if (base) {
 }
 tr.appendChild(tdBase);
 
-              // Ingrédients
-              const tdIngr = document.createElement("td");
-              const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim());
-              ingredients.forEach(ingredient => {
-                const container = document.createElement("div");
-                container.className = "ingredient-container";
+              // Ingrédients (en cartes, 2 lignes de 3 max)
+const tdIngr = document.createElement("td");
+const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim()).filter(i => i);
 
-                const img = document.createElement("img");
-                img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
-                img.alt = ingredient;
-                img.className = "ingredient-img";
+// Conteneur principal
+const gridContainer = document.createElement("div");
+gridContainer.style.display = "grid";
+gridContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
+gridContainer.style.gap = "8px";
+gridContainer.style.justifyItems = "center";
 
-                const label = document.createElement("div");
-                label.textContent = ingredient;
-                label.style.fontSize = "0.8em";
+ingredients.slice(0, 6).forEach(ingredient => {
+  const container = document.createElement("div");
+  container.className = "ingredient-container";
 
-                container.appendChild(img);
-                container.appendChild(label);
-                tdIngr.appendChild(container);
-              });
-              tr.appendChild(tdIngr);
+  const img = document.createElement("img");
+  img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
+  img.alt = ingredient;
+  img.className = "ingredient-img";
+
+  const label = document.createElement("div");
+  label.textContent = ingredient;
+  label.style.fontSize = "0.8em";
+
+  container.appendChild(img);
+  container.appendChild(label);
+  gridContainer.appendChild(container);
+});
+
+tdIngr.appendChild(gridContainer);
+tr.appendChild(tdIngr);
+
 
               // Protéines (avec image + nom)
 const tdProt = document.createElement("td");
