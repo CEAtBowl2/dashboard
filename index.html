@@ -92,22 +92,27 @@
     }
 
     function validerCommande(rowNumber) {
-      const url = `${VALIDATION_URL}?action=valider&row=${rowNumber}`;
+  const url = `${VALIDATION_URL}?action=valider&row=${rowNumber}`;
+  console.log("Envoi de validation vers :", url);
 
-      fetch(url)
-        .then(res => res.text())
-        .then(text => {
-          if (text.trim() === "ok") {
-            fetchCommandes(); // Recharge les commandes à jour
-          } else {
-            alert("Erreur de validation : " + text);
-          }
-        })
-        .catch(error => {
-          console.error("Erreur lors de la validation :", error);
-          alert("Erreur réseau lors de la validation.");
-        });
-    }
+  fetch(url)
+    .then(res => res.text())
+    .then(text => {
+      console.log("Réponse du script :", text);
+      if (text.trim().toLowerCase() === "ok") {
+        alert("Commande validée !");
+        // Petite pause pour que la Google Sheet se mette à jour
+        setTimeout(fetchCommandes, 5000); // Recharge après 1 seconde
+      } else {
+        alert("Erreur côté script : " + text);
+      }
+    })
+    .catch(error => {
+      console.error("Erreur réseau :", error);
+      alert("Erreur réseau lors de la validation.");
+    });
+}
+
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
   </script>
