@@ -96,10 +96,18 @@
     }
 
     function validerCommande(rowNumber) {
-      fetch(`${SCRIPT_URL}?row=${rowNumber}`)
-        .then(() => fetchCommandes())
-        .catch(() => alert("Erreur lors de la validation"));
-    }
+  fetch("/.netlify/functions/proxy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ row: rowNumber })
+  })
+  .then(response => response.text())
+  .then(() => fetchCommandes())
+  .catch(() => alert("Erreur lors de la validation"));
+}
+
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
   </script>
