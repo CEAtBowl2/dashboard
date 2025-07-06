@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <title>Commandes Pokébowl</title>
+  <title>Dashboard Pokébowl</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -58,62 +58,56 @@
   </table>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec"; // à adapter
-    const champs = ["Nom", "Téléphone", "Taille", "Ingrédients", "Protéines", "Remarques"];
+    const SCRIPT_ID = "AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw"; // 🔁 Remplace par l'ID de ton script Apps Script
+    const DATA_URL = "/.netlify/functions/proxy";
+    const VALIDATION_URL = `https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec`;
 
     function fetchCommandes() {
-      fetch("/api")
-        .then(response => response.json())
+      fetch(DATA_URL)
+        .then(res => res.json())
         .then(data => {
           const tbody = document.querySelector("#commandeTable tbody");
           tbody.innerHTML = "";
 
-          data.forEach((ligne, index) => {
-            if ((ligne["Validée"] || "").toLowerCase() !== "v") {
+          data.forEach((commande, index) => {
+            if ((commande["Validée"] || "").toLowerCase() !== "v") {
               const tr = document.createElement("tr");
-
-              champs.forEach(champ => {
-                const td = document.createElement("td");
-                td.textContent = ligne[champ] || "";
-                tr.appendChild(td);
-              });
-
-              const tdAction = document.createElement("td");
-              const btn = document.createElement("button");
-              btn.textContent = "Commande prête";
-              btn.onclick = () => validerCommande(index + 2); // +2 pour l'index réel dans Sheets
-              tdAction.appendChild(btn);
-              tr.appendChild(tdAction);
-
+              tr.innerHTML = `
+                <td>${commande["Nom"] || ""}</td>
+                <td>${commande["Téléphone"] || ""}</td>
+                <td>${commande["Taille"] || ""}</td>
+                <td>${commande["Ingrédients"] || ""}</td>
+                <td>${commande["Protéines"] || ""}</td>
+                <td>${commande["Remarques"] || ""}</td>
+                <td><button onclick="validerCommande(${index + 2})">Commande prête</button></td>
+              `;
               tbody.appendChild(tr);
             }
           });
         })
         .catch(err => {
-          console.error("Erreur fetch /api :", err);
-          alert("Erreur lors du chargement des commandes");
+          console.error("Erreur fetchCommandes :", err);
+          alert("Erreur lors du chargement des commandes.");
         });
     }
 
-  function validerCommande(rowNumber) {
- fetch(`${SCRIPT_URL}?action=valider&row=${rowNumber}`)
-    .then(response => response.text())
-    .then(result => {
-      if (result.trim() === "ok") {
-        setTimeout(() => {
-          fetchCommandes();
-        }, 500);
-      } else {
-        alert("Erreur lors de la validation : " + result);
-      }
-    })
-    .catch(error => {
-      console.error("Erreur réseau :", error);
-      alert("Erreur réseau lors de la validation");
-    });
-}
+    function validerCommande(rowNumber) {
+      const url = `${VALIDATION_URL}?action=valider&row=${rowNumber}`;
 
-
+      fetch(url)
+        .then(res => res.text())
+        .then(text => {
+          if (text.trim() === "ok") {
+            fetchCommandes(); // Recharge les commandes à jour
+          } else {
+            alert("Erreur de validation : " + text);
+          }
+        })
+        .catch(error => {
+          console.error("Erreur lors de la validation :", error);
+          alert("Erreur réseau lors de la validation.");
+        });
+    }
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
   </script>
