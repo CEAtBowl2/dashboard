@@ -298,7 +298,6 @@ container.appendChild(card);
         .then(res => res.text())
         .then(text => {
           if (text.trim().toLowerCase() === "ok") {
-            alert("Commande validée !");
             setTimeout(fetchCommandes, 1000);
           } else {
             alert("Erreur côté script : " + text);
