@@ -95,19 +95,19 @@
         });
     }
 
-      function validerCommande(rowNumber) {
+  function validerCommande(rowNumber, buttonElement) {
     fetch(`${SCRIPT_URL}?row=${rowNumber}`)
       .then(response => response.text())
       .then(result => {
         if (result.trim() === "ok") {
-          setTimeout(fetchCommandes, 1000); // délai de 1 seconde
+          const row = buttonElement.closest("tr");
+          row.remove(); // Supprime la ligne de la table directement
         } else {
           alert("Erreur lors de la validation");
         }
       })
       .catch(() => alert("Erreur lors de la validation"));
   }
-
 
     document.addEventListener("DOMContentLoaded", fetchCommandes);
   </script>
