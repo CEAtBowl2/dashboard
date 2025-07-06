@@ -49,6 +49,20 @@
       margin: 5px;
       text-align: center;
     }
+  .ingredient-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ingredient-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+
+    
   </style>
 </head>
 <body>
@@ -101,8 +115,25 @@
 
               // Base
               const tdBase = document.createElement("td");
-              tdBase.textContent = commande["Base"] || "";
-              tr.appendChild(tdBase);
+const base = commande["Base"] || "";
+if (base) {
+  const baseContainer = document.createElement("div");
+  baseContainer.className = "ingredient-container"; // même style que les ingrédients
+
+  const baseImg = document.createElement("img");
+  baseImg.src = `./images/${base.toLowerCase().replace(/ /g, "_")}.png`;
+  baseImg.alt = base;
+  baseImg.className = "ingredient-img";
+
+  const baseLabel = document.createElement("div");
+  baseLabel.textContent = base;
+  baseLabel.style.fontSize = "0.8em";
+
+  baseContainer.appendChild(baseImg);
+  baseContainer.appendChild(baseLabel);
+  tdBase.appendChild(baseContainer);
+}
+tr.appendChild(tdBase);
 
               // Ingrédients
               const tdIngr = document.createElement("td");
@@ -126,10 +157,24 @@
               });
               tr.appendChild(tdIngr);
 
-              // Protéines
-              const tdProt = document.createElement("td");
-              tdProt.textContent = commande["Protéines"] || "";
-              tr.appendChild(tdProt);
+              // Protéines (avec image + nom)
+const tdProt = document.createElement("td");
+const prot = commande["Protéines"] || "";
+if (prot) {
+  const protContainer = document.createElement("div");
+  protContainer.className = "ingredient-container";
+
+  const protImg = document.createElement("img");
+  protImg.src = `./images/${prot.toLowerCase().replace(/ /g, "_")}.png`;
+  protImg.alt = prot;
+  protImg.className = "ingredient-img";
+
+  const protLabel = document.createElement("div");
+  protLabel.textContent = prot;
+  protLabel.style.fontSize = "0.8em";
+
+  protContainer.appendCh
+
 
               // Remarques
               const tdRem = document.createElement("td");
