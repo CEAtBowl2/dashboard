@@ -4,145 +4,43 @@
   <meta charset="UTF-8" />
   <title>Dashboard Pokébowl</title>
   <style>
-    /* Ton CSS ici (inchangé car déjà optimisé) */
-    body {
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      background-color: #fefefe;
-      margin: 0;
-      padding: 3em;
-      color: #333;
+    body{font-family:'Segoe UI',Roboto,sans-serif;background:#fefefe;margin:0;padding:3em;color:#333}
+    h1{text-align:center;color:#ff3a3a;font-size:2.5em;letter-spacing:1px;margin:0 0 .6em}
+    #commandeTable{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;padding:0;list-style:none}
+
+    /* Toolbar */
+    .toolbar{
+      max-width:1100px;margin:0 auto 1rem;display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center
     }
-    h1 {
-      text-align: center;
-      color: #ff3a3a;
-      font-size: 2.5em;
-      letter-spacing: 1px;
-      margin-bottom: 1em;
+    .tb-btn{
+      background:#fff;border:1px solid #eee;border-radius:999px;padding:.55rem .9rem;cursor:pointer;
+      box-shadow:0 2px 8px rgba(0,0,0,.05);font-weight:600
     }
-    #commandeTable {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  padding: 0;
-  list-style: none;
-}
+    .tb-btn.primary{background:#10b981;color:#fff;border-color:#10b981}
+    .tb-btn.warn{background:#ff3a3a;color:#fff;border-color:#ff3a3a}
 
-.commande-card {
-  width: 300px;
-  background: #ffffff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-  border-radius: 12px;
-  padding: 1.2em;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-size: 0.9em;
-  border: 1px solid #f0f0f0;
-}
+    .commande-card{width:320px;background:#fff;box-shadow:0 4px 15px rgba(0,0,0,.08);border-radius:12px;padding:1.2em;font-size:.9em;border:1px solid #f0f0f0;display:flex;flex-direction:column}
+    .commande-card h2{text-align:center;margin:.1em 0 .5em;font-size:1.2em;color:#ff3a3a}
+    .info{margin-bottom:.5em;border-bottom:1px dashed #ddd;padding-bottom:.5em}
+    .label{font-weight:700;display:inline-block;min-width:90px}
+    .tiny{font-size:.85em;opacity:.75}
 
-.commande-card h2 {
-  text-align: center;
-  margin: 0 0 0.5em 0;
-  font-size: 1.3em;
-  color: #ff3a3a;
-}
+    .ingredient-container{width:70px;height:92px;margin:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fdfdfd;border-radius:10px;padding:8px;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+    .ingredient-img{width:42px;height:42px;object-fit:contain;margin-bottom:6px}
+    .ingredients-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:8px 0}
+    .ligne-base{display:flex;align-items:center;gap:12px}
 
-.commande-card .info {
-  margin-bottom: 0.5em;
-  border-bottom: 1px dashed #ddd;
-  padding-bottom: 0.5em;
-}
+    /* Footer actions sur carte */
+    .card-actions{display:flex;gap:.5rem;justify-content:space-between;align-items:center;margin-top:.6rem}
+    .btn{background:#10b981;color:#fff;border:none;border-radius:10px;padding:.5rem .8rem;cursor:pointer;box-shadow:0 3px 10px rgba(16,185,129,.2);font-weight:600}
+    .btn.secondary{background:#fff;color:#333;border:1px solid #eee}
+    .btn.warn{background:#ff3a3a}
 
-.commande-card .label {
-  font-weight: bold;
-  display: inline-block;
-  min-width: 80px;
-}
-
-.commande-card .ingredient-container {
-  width: 70px;
-  height: 90px;
-  margin: 5px;
-}
-
-.commande-card .ingredients-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin: 8px 0;
-}
-
-.commande-card button {
-  align-self: center;
-  margin-top: 1em;
-}
-
-    button {
-      background-color: #10b981;
-      color: white;
-      padding: 0.6em 1.2em;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.9em;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-      transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-    button:hover {
-      background-color: #0f9b72;
-      transform: scale(1.03);
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    .ligne-base {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-
-    .ingredient-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background-color: #fdfdfd;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 5px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
-      width: 80px;
-      height: 100px;
-      box-sizing: border-box;
-      transition: transform 0.2s ease;
-    }
-    .ingredient-container:hover {
-      transform: translateY(-3px);
-    }
-    .ingredient-img {
-      width: 42px;
-      height: 42px;
-      object-fit: contain;
-      margin-bottom: 6px;
-    }
-    @media (max-width: 900px) {
-      body {
-        padding: 1em;
-      }
-      table, th, td {
-        font-size: 0.85em;
-      }
-      .ingredient-container {
-        width: 60px;
-        height: 80px;
-      }
-      h1 {
-        font-size: 2em;
-      }
+    @media (max-width: 900px){
+      body{padding:1em}
+      .ingredient-container{width:60px;height:80px}
+      h1{font-size:2em}
+      .commande-card{width:100%}
     }
   </style>
   <meta name="robots" content="noindex, nofollow">
@@ -150,252 +48,296 @@
 <body>
   <h1>Tableau de commandes Pokébowl</h1>
 
+  <!-- Barre d’actions -->
+  <div class="toolbar">
+    <button class="tb-btn" id="btnRefresh">🔄 Rafraîchir</button>
+    <button class="tb-btn" id="btnToggleValidated">👁️ Afficher commandes validées</button>
+    <button class="tb-btn primary" id="btnValidateAll">✅ Tout valider (affichées)</button>
+    <button class="tb-btn" id="btnPrint">🖨️ Imprimer la liste</button>
+  </div>
+
   <div id="commandeTable"></div>
-  </table>
 
   <script>
-  // URLs
-  const DATA_URL = "/.netlify/functions/proxy";
-  const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
+    // URLs
+    const DATA_URL = "/.netlify/functions/proxy"; // via Netlify -> Apps Script doGet
+    const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
 
-  // Helpers
-  const imgFromLabel = (label) =>
-    `./images/${(label || '').toLowerCase().replace(/\s+/g,'_')}.png`;
+    // State
+    let SHOW_VALIDATED = false; // par défaut on affiche seulement les commandes non validées
+    let LAST_GROUPS = [];       // cache des groupes pour actions globales
 
-  const isValidated = v => (String(v || '').trim().toLowerCase() === 'v');
+    // Helpers
+    const isValidated = v => (String(v || '').trim().toLowerCase() === 'v');
+    const imgFromLabel = (label) => `./images/${(label || '').toLowerCase().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_')}.png`;
 
-  // Clé de regroupement d’une commande
-  function groupKey(row) {
-    // Horodatage tel qu’il ressort de la Sheet + identité client
-    return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||");
-  }
-
-  // Regroupe lignes par commande + conserve les rowNumbers (index+2)
-  function groupRows(rows) {
-    const groups = new Map();
-    rows.forEach((row, i) => {
-      const key = groupKey(row);
-      const rowNumber = i + 2; // 1=header, donc +2
-      if (!groups.has(key)) {
-        groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true });
-      }
-      const g = groups.get(key);
-      g.rows.push(row);
-      g.rowNumbers.push(rowNumber);
-      if (!isValidated(row["Validée"])) g.allValidated = false;
-    });
-    return Array.from(groups.values());
-  }
-
-  // Composant visuel d’un “bloc ingrédient” (image + label)
-  function ingredientBlock(label) {
-    if (!label) return '';
-    return `
-      <div class="ingredient-container">
-        <img class="ingredient-img" src="${imgFromLabel(label)}" alt="${label}">
-        <div style="font-size:.7em">${label}</div>
-      </div>
-    `;
-  }
-
-  // Rend un item POKÉ / MENU
-  function renderPokeOrMenu(row) {
-    const titre = row["Type"] === 'menu'
-      ? `Menu Poké ${row["Taille"] || ''} + Smoothie`
-      : `Poké ${row["Taille"] || ''}`;
-
-    const ingredients = (row["Ingrédients"] || "")
-      .split(",").map(s => s.trim()).filter(Boolean).slice(0, 12);
-
-    const toppings = (row["Toppings"] || "")
-      .split(",").map(s => s.trim()).filter(Boolean);
-
-    return `
-      <div class="info">
-        <div style="font-weight:700;margin-bottom:.3em;">${titre}</div>
-
-        <div class="ligne-base">
-          <span class="label">🧾 Base :</span>
-          ${row["Base"] ? ingredientBlock(row["Base"]) : '—'}
-        </div>
-
-        <div class="label" style="margin-top:.4em">🥗 Ingrédients :</div>
-        <div class="ingredients-grid">
-          ${ingredients.map(ingredientBlock).join('') || '—'}
-        </div>
-
-        <div class="ligne-base">
-          <span class="label">🍗 Protéine(s) :</span>
-          ${row["Protéines"]
-            ? row["Protéines"].split(",").map(s => s.trim()).filter(Boolean).map(ingredientBlock).join('')
-            : '—'}
-        </div>
-
-        <div class="ligne-base">
-          <span class="label">🥢 Sauce :</span>
-          ${row["Sauce"] ? ingredientBlock(row["Sauce"]) : '—'}
-        </div>
-
-        <div class="label" style="margin-top:.4em">🌱 Toppings :</div>
-        <div class="ingredients-grid">
-          ${toppings.length ? toppings.map(ingredientBlock).join('') : '—'}
-        </div>
-
-        ${row["Type"] === 'menu' && row["Smoothie"]
-          ? `<div class="ligne-base"><span class="label">🥣 Smoothie :</span> ${ingredientBlock(row["Smoothie"])}</div>`
-          : ''}
-      </div>
-    `;
-  }
-
-  // Rend un item SIMPLE (cookie, boisson, jus, smoothie bowl, etc.)
-  function renderSimpleItem(row) {
-    const type = row["Type"] || 'article';
-    const article = row["Article"] || type;
-    const qty = row["Quantité"] || 1;
-    const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
-    return `
-      <div class="info">
-        <div><b>${article}</b> &times; ${qty}</div>
-        <div class="tiny" style="opacity:.8">Sous-total : ${sousTotal}</div>
-      </div>
-    `;
-  }
-
-  // Valide toutes les lignes d’un groupe (commande)
-  async function validerCommandeGroup(rowNumbers) {
-    try {
-      const calls = rowNumbers.map(rn =>
-        fetch(`${VALIDATION_URL}?action=valider&row=${rn}`).then(res => res.text())
-      );
-      const results = await Promise.all(calls);
-      const ok = results.every(t => String(t).trim().toLowerCase() === 'ok');
-      if (!ok) {
-        alert("Une ou plusieurs lignes n'ont pas pu être validées.");
-      }
-      await fetchCommandes(); // refresh
-    } catch (e) {
-      console.error(e);
-      alert("Erreur réseau lors de la validation.");
+    function groupKey(row){
+      // Clé de regroupement : Horodatage + Nom + Téléphone
+      return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||");
     }
-  }
 
-  // Rendu d’une commande (groupe)
-  function renderCommandeCard(group) {
-    const c = group.meta;
-    const container = document.getElementById("commandeTable");
+    function groupRows(rows){
+      const groups = new Map();
+      rows.forEach((row, i) => {
+        const key = groupKey(row);
+        const rowNumber = i + 2; // 1 = en-têtes
+        if(!groups.has(key)){
+          groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true });
+        }
+        const g = groups.get(key);
+        g.rows.push(row);
+        g.rowNumbers.push(rowNumber);
+        if(!isValidated(row["Validée"])) g.allValidated = false;
+      });
+      return Array.from(groups.values());
+    }
 
-    const card = document.createElement("div");
-    card.className = "commande-card";
+    function ingredientBlock(label){
+      if(!label) return '';
+      return `
+        <div class="ingredient-container">
+          <img class="ingredient-img" src="${imgFromLabel(label)}" alt="${label}" onerror="this.style.opacity=.2">
+          <div style="font-size:.7em;text-align:center">${label}</div>
+        </div>
+      `;
+    }
 
-    // Titre (client + ID compact)
-    const h2 = document.createElement("h2");
-    const t = new Date(c["Horodatage"]);
-    const id = isNaN(t.getTime())
-      ? "#" + Math.floor(100000 + Math.random() * 900000)
-      : `#${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}${String(t.getSeconds()).padStart(2,'0')}`;
-    h2.textContent = `${c["Nom"] || ""} ${id}`;
-    card.appendChild(h2);
+    // Affichage complet POKÉ / MENU
+    function renderPokeOrMenu(row){
+      const titre = row["Type"] === 'menu'
+        ? `Menu Poké ${row["Taille"] || ''} + Smoothie`
+        : `Poké ${row["Taille"] || ''}`;
 
-    // Locker
-    const locker = document.createElement("div");
-    locker.className = "info";
-    locker.innerHTML = `<span class="label">📦 Locker :</span> ${c["Locker"] || "–"}`;
-    card.appendChild(locker);
+      const ingredients = (row["Ingrédients"] || "").split(",").map(s=>s.trim()).filter(Boolean);
+      const toppings    = (row["Toppings"] || "").split(",").map(s=>s.trim()).filter(Boolean);
+      const proteines   = (row["Protéines"] || "").split(",").map(s=>s.trim()).filter(Boolean);
 
-    // Tel
-    const tel = document.createElement("div");
-    tel.className = "info";
-    tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${c["Téléphone"] || ""}`;
-    card.appendChild(tel);
+      const qty = row["Quantité"] || 1;
+      const prix = row["Prix"] ? `${row["Prix"]} €` : '—';
+      const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
 
-    // Horaire
-    const horaire = document.createElement("div");
-    horaire.className = "info";
-    horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${c["Horaire"] || ""}</strong>`;
-    card.appendChild(horaire);
+      return `
+        <div class="info">
+          <div style="font-weight:700;margin-bottom:.3em;">${titre}</div>
 
-    // Liste des items de la commande
-    const pokeRows = group.rows.filter(r => (r["Type"] === 'poke' || r["Type"] === 'menu'));
-    const simpleRows = group.rows.filter(r => !(r["Type"] === 'poke' || r["Type"] === 'menu'));
+          <div class="tiny">Type: <b>${row["Type"]}</b> • Article: <b>${row["Article"]||titre}</b> • Qté: <b>${qty}</b> • PU: <b>${prix}</b> • Sous-total: <b>${sousTotal}</b></div>
 
-    // Poké / Menu
-    pokeRows.forEach(r => {
-      const block = document.createElement("div");
-      block.innerHTML = renderPokeOrMenu(r);
-      card.appendChild(block);
-    });
+          <div class="ligne-base" style="margin-top:.35em">
+            <span class="label">🧾 Base :</span>
+            ${row["Base"] ? ingredientBlock(row["Base"]) : '—'}
+          </div>
 
-    // Articles simples
-    if (simpleRows.length) {
-      const lab = document.createElement("div");
-      lab.className = "label";
-      lab.textContent = "🧁 Articles complémentaires :";
-      card.appendChild(lab);
+          <div class="label" style="margin-top:.4em">🥗 Ingrédients :</div>
+          <div class="ingredients-grid">
+            ${ingredients.length ? ingredients.map(ingredientBlock).join('') : '—'}
+          </div>
 
-      simpleRows.forEach(r => {
+          <div class="ligne-base">
+            <span class="label">🍗 Protéine(s) :</span>
+            ${proteines.length ? proteines.map(ingredientBlock).join('') : '—'}
+          </div>
+
+          <div class="ligne-base">
+            <span class="label">🥢 Sauce :</span>
+            ${row["Sauce"] ? ingredientBlock(row["Sauce"]) : '—'}
+          </div>
+
+          <div class="label" style="margin-top:.4em">🌱 Toppings :</div>
+          <div class="ingredients-grid">
+            ${toppings.length ? toppings.map(ingredientBlock).join('') : '—'}
+          </div>
+
+          ${row["Type"] === 'menu' && row["Smoothie"]
+            ? `<div class="ligne-base"><span class="label">🥣 Smoothie :</span> ${ingredientBlock(row["Smoothie"])}</div>`
+            : ''}
+        </div>
+      `;
+    }
+
+    // Affichage complet ARTICLE SIMPLE
+    function renderSimpleItem(row){
+      const type = row["Type"] || 'article';
+      const article = row["Article"] || type;
+      const qty = row["Quantité"] || 1;
+      const prix = row["Prix"] ? `${row["Prix"]} €` : '—';
+      const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
+
+      return `
+        <div class="info">
+          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+            <div><b>${article}</b> <span class="tiny">(${type})</span></div>
+            <div class="tiny">Qté: <b>${qty}</b> • PU: <b>${prix}</b> • ST: <b>${sousTotal}</b></div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function validerCommandeGroup(rowNumbers){
+      try{
+        const calls = rowNumbers.map(rn => fetch(`${VALIDATION_URL}?action=valider&row=${rn}`).then(r=>r.text()));
+        const results = await Promise.all(calls);
+        const ok = results.every(t => String(t).trim().toLowerCase() === 'ok');
+        if(!ok) alert("Une ou plusieurs lignes n'ont pas pu être validées.");
+        await fetchCommandes();
+      }catch(e){
+        console.error(e); alert("Erreur réseau lors de la validation.");
+      }
+    }
+
+    function telHref(phone){
+      const digits = String(phone||'').replace(/[^\d+]/g,'');
+      return digits ? `tel:${digits}` : null;
+    }
+
+    function renderCommandeCard(group){
+      const c = group.meta;
+      const container = document.getElementById("commandeTable");
+
+      const card = document.createElement("div");
+      card.className = "commande-card";
+
+      // Titre (Nom + ID compact + Horodatage)
+      const h2 = document.createElement("h2");
+      const t = new Date(c["Horodatage"]);
+      const id = isNaN(t.getTime())
+        ? "#" + Math.floor(100000 + Math.random()*900000)
+        : `#${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}`;
+      h2.textContent = `${c["Nom"] || ""} ${id}`;
+      card.appendChild(h2);
+
+      // Horodatage brut
+      const dt = document.createElement("div");
+      dt.className = "info tiny";
+      dt.innerHTML = `<span class="label">🗓️ Créée :</span> ${c["Horodatage"] || "—"}`;
+      card.appendChild(dt);
+
+      // Locker / Tel / Horaire
+      const locker = document.createElement("div");
+      locker.className = "info";
+      locker.innerHTML = `<span class="label">📦 Locker :</span> ${c["Locker"] || "–"}`;
+      card.appendChild(locker);
+
+      const tel = document.createElement("div");
+      tel.className = "info";
+      tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${c["Téléphone"] || ""}`;
+      card.appendChild(tel);
+
+      const horaire = document.createElement("div");
+      horaire.className = "info";
+      horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <b>${c["Horaire"] || ""}</b>`;
+      card.appendChild(horaire);
+
+      // Détailler tous les items
+      const pokeRows = group.rows.filter(r => (r["Type"] === 'poke' || r["Type"] === 'menu'));
+      const simpleRows = group.rows.filter(r => !(r["Type"] === 'poke' || r["Type"] === 'menu'));
+
+      pokeRows.forEach(r => {
         const block = document.createElement("div");
-        block.innerHTML = renderSimpleItem(r);
+        block.innerHTML = renderPokeOrMenu(r);
         card.appendChild(block);
       });
-    }
 
-    // Remarques (Commentaires)
-    if (c["Commentaires"]) {
-      const rem = document.createElement("div");
-      rem.className = "info";
-      rem.innerHTML = `<span class="label">📝 Remarques :</span> ${c["Commentaires"]}`;
-      card.appendChild(rem);
-    }
-
-    // Total + bouton
-    const bottom = document.createElement("div");
-    bottom.style.display = "flex";
-    bottom.style.alignItems = "center";
-    bottom.style.justifyContent = "space-between";
-    bottom.style.marginTop = "0.6em";
-
-    const totalDiv = document.createElement("div");
-    totalDiv.innerHTML = `<span class="label">💶 Total :</span> <b>${c["Total"] || "—"}</b>`;
-    bottom.appendChild(totalDiv);
-
-    const btn = document.createElement("button");
-    btn.textContent = group.allValidated ? "✅ Déjà validée" : "Commande prête";
-    btn.disabled = group.allValidated;
-    btn.onclick = () => validerCommandeGroup(group.rowNumbers);
-    bottom.appendChild(btn);
-
-    card.appendChild(bottom);
-    container.appendChild(card);
-  }
-
-  // Fetch + render
-  async function fetchCommandes() {
-    try {
-      const res = await fetch(DATA_URL);
-      const data = await res.json(); // tableau brut des lignes
-      const container = document.getElementById("commandeTable");
-      container.innerHTML = "";
-
-      // Filtrer les lignes non validées OU les grouper puis afficher (on affiche seulement les commandes ayant au moins une ligne non validée)
-      const groups = groupRows(data);
-      const pending = groups.filter(g => !g.allValidated);
-
-      if (!pending.length) {
-        container.innerHTML = "<p>Aucune commande en attente ✅</p>";
-        return;
+      if(simpleRows.length){
+        const lab = document.createElement("div");
+        lab.className = "label";
+        lab.textContent = "🧁 Articles complémentaires :";
+        card.appendChild(lab);
+        simpleRows.forEach(r => {
+          const block = document.createElement("div");
+          block.innerHTML = renderSimpleItem(r);
+          card.appendChild(block);
+        });
       }
 
-      pending.forEach(renderCommandeCard);
-    } catch (err) {
-      console.error("Erreur fetchCommandes :", err);
-      alert("Erreur lors du chargement des commandes.");
+      // Remarques
+      if (c["Commentaires"]) {
+        const rem = document.createElement("div");
+        rem.className = "info";
+        rem.innerHTML = `<span class="label">📝 Remarques :</span> ${c["Commentaires"]}`;
+        card.appendChild(rem);
+      }
+
+      // Total + boutons
+      const footer = document.createElement("div");
+      footer.className = "card-actions";
+
+      const totalDiv = document.createElement("div");
+      totalDiv.innerHTML = `<span class="label">💶 Total :</span> <b>${c["Total"] || "—"}</b>`;
+      footer.appendChild(totalDiv);
+
+      const btns = document.createElement("div");
+      btns.style.display = "flex"; btns.style.gap = ".4rem";
+
+      // Appeler
+      const callHref = telHref(c["Téléphone"]);
+      const bCall = document.createElement("button");
+      bCall.className = "btn secondary";
+      bCall.textContent = "📲 Appeler";
+      if(callHref){ bCall.onclick = ()=> window.location.href = callHref; } else { bCall.disabled = true; }
+      btns.appendChild(bCall);
+
+      // Imprimer la carte
+      const bPrint = document.createElement("button");
+      bPrint.className = "btn secondary";
+      bPrint.textContent = "🖨️ Imprimer";
+      bPrint.onclick = ()=> {
+        const w = window.open('', '_blank');
+        w.document.write(`<html><head><title>${c["Nom"]||"Commande"}</title></head><body>${card.outerHTML}</body></html>`);
+        w.document.close(); w.focus(); w.print(); w.close();
+      };
+      btns.appendChild(bPrint);
+
+      // Valider
+      const bOk = document.createElement("button");
+      bOk.className = "btn warn";
+      bOk.textContent = group.allValidated ? "✅ Déjà validée" : "Commande prête";
+      bOk.disabled = group.allValidated;
+      bOk.onclick = ()=> validerCommandeGroup(group.rowNumbers);
+      btns.appendChild(bOk);
+
+      footer.appendChild(btns);
+      card.appendChild(footer);
+
+      document.getElementById("commandeTable").appendChild(card);
     }
-  }
 
-  document.addEventListener("DOMContentLoaded", fetchCommandes);
-</script>
+    async function fetchCommandes(){
+      try{
+        const res = await fetch(DATA_URL);
+        const data = await res.json(); // lignes brutes
+        const container = document.getElementById("commandeTable");
+        container.innerHTML = "";
 
+        const groups = groupRows(data);
+        LAST_GROUPS = groups;
+
+        const toShow = SHOW_VALIDATED ? groups : groups.filter(g => !g.allValidated);
+
+        if(!toShow.length){
+          container.innerHTML = "<p>Aucune commande à afficher ✅</p>";
+          return;
+        }
+        toShow.forEach(renderCommandeCard);
+      }catch(err){
+        console.error("Erreur fetchCommandes :", err);
+        alert("Erreur lors du chargement des commandes.");
+      }
+    }
+
+    // Toolbar actions
+    document.getElementById('btnRefresh').onclick = fetchCommandes;
+    document.getElementById('btnToggleValidated').onclick = ()=>{ SHOW_VALIDATED = !SHOW_VALIDATED; fetchCommandes(); };
+    document.getElementById('btnPrint').onclick = ()=> window.print();
+    document.getElementById('btnValidateAll').onclick = async ()=>{
+      const groups = SHOW_VALIDATED ? LAST_GROUPS : LAST_GROUPS.filter(g => !g.allValidated);
+      if(!groups.length) return;
+      if(!confirm(`Valider ${groups.length} commande(s) affichée(s) ?`)) return;
+      for(const g of groups){
+        await validerCommandeGroup(g.rowNumbers);
+      }
+    };
+
+    document.addEventListener("DOMContentLoaded", fetchCommandes);
+  </script>
 </body>
 </html>
-
