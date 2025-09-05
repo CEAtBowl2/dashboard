@@ -58,30 +58,30 @@
 
   <div id="commandeTable"></div>
 
- <script>
-  /* ================== CONFIG ================== */
-  const DATA_URL = "/.netlify/functions/proxy"; // doGet Apps Script via Netlify
+<script>
+  // URLs
+  const DATA_URL = "/.netlify/functions/proxy"; 
   const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
 
-  /* ================== STATE ================== */
-  let SHOW_VALIDATED = false;  // false = afficher EN COURS ; true = afficher VALIDÉES
+  // State
+  let SHOW_VALIDATED = false; // false = "en cours" ; true = "validées"
   let LAST_GROUPS = [];
 
-  /* ========== Utils format & images (inchangés) ========== */
+  /** ---------- Utils format / images ---------- **/
   const isValidated = v => (String(v || '').trim().toLowerCase() === 'v');
   const isPaid      = v => (String(v || '').trim().toLowerCase() === 'p');
 
-  function deaccent(str=''){
-    return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+  function deaccent(str='') {
+    return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
   }
-  function slugify(str=''){
-    return deaccent(str).replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,'');
+  function slugify(str='') {
+    return deaccent(str).replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, '');
   }
-  function formatHoraire(h){
-    if(!h) return "";
-    if(/^\d{1,2}:\d{2}$/.test(h)) return h;
+  function formatHoraire(h) {
+    if (!h) return "";
+    if (/^\d{1,2}:\d{2}$/.test(h)) return h;
     const d = new Date(h);
-    if(!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    if (!isNaN(d)) return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
     return h;
   }
 
@@ -91,59 +91,57 @@
     'avocat':'avocat.png','betterave':'betterave.png','carotte':'carotte.png','champignon':'champignon.png',
     'choux rouge':'chouxrouge.png','concombre':'concombre.png','edamame':'edamame.png','feta':'feta.png',
     'grenade':'grenade.png','mais':'mais.png','mangue':'mangue.png','mozzarella':'mozzarella.png',
-    'oignon rouge':'oignonrouge.png','poivrons':'poivrons.png','radis':'radis.png','tomates':'tomates.png',
-    'wakame':'wakame.png',
+    'oignon rouge':'oignonrouge.png','poivrons':'poivrons.png','radis':'radis.png','tomates':'tomates.png','wakame':'wakame.png',
     'soja sucree':'soja.png','soja salee':'soja.png','cesar':'césar.png','moutarde miel':'miel_moutarde.png',
     'curry mangue':'curry_mango.png','mayo epicee':'mayo_epicee.png','passion':'passion.png','balsamique':'balsamique.png',
     'sesame':'sésame.png','pavot':'pavot.png','cacahuete':'cacahuètes.png','croutons':'croutons.png',
     'coriandre':'coriandre.png','coriandre fraiche':'coriandre.png','oignons frits':'oignons_frits.png',
     'coca':'coca.png','sprite':'sprite.png','ice tea':'icetea.png','oasis':'oasis.png','orangina':'o.png',
     'cookie':'cookie.png','cookie chocolat':'cookie.png','cookie framboise':'cookief.png','cookie mangue':'cookiem.png',
-    'smoothie':'smoothie.png','smoothie kiwi':'smoothiekiwi.png','smoothie mangue':'smoothiemangue.png',
-    'smoothie fruits rouges':'smoothierouge.png',
+    'smoothie':'smoothie.png','smoothie kiwi':'smoothiekiwi.png','smoothie mangue':'smoothiemangue.png','smoothie fruits rouges':'smoothierouge.png',
     'smoothie bowl kiwi':'smoothiekiwi.png','smoothie bowl mangue':'smoothiemangue.png','smoothie bowl fruits rouges':'smoothierouge.png',
     'jus concombre':'jusconcombre.png','jus pasteque':'juspasteque.png','jus carotte':'juscarotte.png'
   };
 
-  function imgFromLabel(labelRaw=''){
-    const label = (labelRaw||'').trim();
-    if(!label) return './images/placeholder.png';
+  function imgFromLabel(labelRaw='') {
+    const label = (labelRaw || '').trim();
+    if (!label) return './images/placeholder.png';
     const normalized = deaccent(label);
-    // alias exact
-    if(IMG_ALIASES[normalized]) return `./images/${IMG_ALIASES[normalized]}`;
-    // familles
-    if(normalized.startsWith('smoothie bowl')){
-      const flavor = normalized.replace('smoothie bowl','').trim(); // "mangue"
-      const base = `smoothie ${flavor}`; // "smoothie mangue"
-      if(IMG_ALIASES[base]) return `./images/${IMG_ALIASES[base]}`;
+
+    if (IMG_ALIASES[normalized]) return `./images/${IMG_ALIASES[normalized]}`;
+
+    if (normalized.startsWith('smoothie bowl')) {
+      const flavor = normalized.replace('smoothie bowl','').trim();
+      const base = `smoothie ${flavor}`;
+      if (IMG_ALIASES[base]) return `./images/${IMG_ALIASES[base]}`;
     }
-    if(IMG_ALIASES[normalized]) return `./images/${IMG_ALIASES[normalized]}`;
-    // fallback
-    return `./images/${slugify(label)}.png`;
+    const slug = slugify(label);
+    return `./images/${slug}.png`;
   }
 
-  /* ========== Grouping des lignes en “commande” ========== */
+  /** ---------- Grouping par commande ---------- **/
   function groupKey(row){
     return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||");
   }
+
   function groupRows(rows){
     const groups = new Map();
     rows.forEach((row, i) => {
       const key = groupKey(row);
-      const rowNumber = i + 2; // 1 = entêtes
+      const rowNumber = i + 2; // entêtes ligne 1 => +2
       if(!groups.has(key)){
-        groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true, anyPaid: false });
+        groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true, allPaid: true });
       }
       const g = groups.get(key);
       g.rows.push(row);
       g.rowNumbers.push(rowNumber);
-      if(!isValidated(row["Validée"])) g.allValidated = false;
-      if(isPaid(row["Payée"])) g.anyPaid = true;
+      if (!isValidated(row["Validée"])) g.allValidated = false;
+      if (!isPaid(row["Payée"]))       g.allPaid = false;
     });
     return Array.from(groups.values());
   }
 
-  /* ========== Rendus visuels ========== */
+  /** ---------- UI blocks ---------- **/
   function ingredientBlock(label){
     if(!label) return '';
     const src = imgFromLabel(label);
@@ -157,12 +155,12 @@
 
   function renderPokeOrMenu(row){
     const titre = row["Type"] === 'menu'
-      ? `Menu Poké ${row["Taille"]||''} + Smoothie`
-      : `Poké ${row["Taille"]||''}`;
+      ? `Menu Poké ${row["Taille"] || ''} + Smoothie`
+      : `Poké ${row["Taille"] || ''}`;
 
-    const ingredients = (row["Ingrédients"]||"").split(",").map(s=>s.trim()).filter(Boolean);
-    const toppings    = (row["Toppings"]||"").split(",").map(s=>s.trim()).filter(Boolean);
-    const proteines   = (row["Protéines"]||"").split(",").map(s=>s.trim()).filter(Boolean);
+    const ingredients = (row["Ingrédients"] || "").split(",").map(s=>s.trim()).filter(Boolean);
+    const toppings    = (row["Toppings"] || "").split(",").map(s=>s.trim()).filter(Boolean);
+    const proteines   = (row["Protéines"] || "").split(",").map(s=>s.trim()).filter(Boolean);
 
     const qty = row["Quantité"] || 1;
     const prix = row["Prix"] ? `${row["Prix"]} €` : '—';
@@ -171,6 +169,7 @@
     return `
       <div class="info">
         <div style="font-weight:700;margin-bottom:.3em;">${titre}</div>
+
         <div class="tiny">Type: <b>${row["Type"]}</b> • Article: <b>${row["Article"]||titre}</b> • Qté: <b>${qty}</b> • PU: <b>${prix}</b> • Sous-total: <b>${sousTotal}</b></div>
 
         <div class="ligne-base" style="margin-top:.35em">
@@ -198,7 +197,7 @@
           ${toppings.length ? toppings.map(ingredientBlock).join('') : '—'}
         </div>
 
-        ${row["Type"]==='menu' && row["Smoothie"]
+        ${row["Type"] === 'menu' && row["Smoothie"]
           ? `<div class="ligne-base"><span class="label">🥣 Smoothie :</span> ${ingredientBlock(row["Smoothie"])}</div>`
           : ''}
       </div>
@@ -206,11 +205,10 @@
   }
 
   function renderSimpleItem(row){
-    const article   = row["Article"] || row["Type"] || "Article";
-    const qty       = row["Quantité"] || 1;
+    const article = row["Article"] || row["Type"] || "Article";
+    const qty = row["Quantité"] || 1;
     const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
-    const src       = imgFromLabel(article);
-
+    const src = imgFromLabel(article);
     return `
       <div class="info ligne-base">
         <div class="ingredient-container">
@@ -225,27 +223,19 @@
     `;
   }
 
-  /* ========== Actions (valider / unvalider / payer) ========== */
-  async function callActionForRows(action, rowNumbers){
-    const calls = rowNumbers.map(rn => fetch(`${VALIDATION_URL}?action=${action}&row=${rn}`).then(r=>r.text()));
+  /** ---------- Actions serveur ---------- **/
+  async function callRowAction(action, rowNumbers){
+    const calls = rowNumbers.map(rn =>
+      fetch(`${VALIDATION_URL}?action=${action}&row=${rn}`).then(r=>r.text())
+    );
     const results = await Promise.all(calls);
-    const ok = results.every(t => String(t).trim().toLowerCase() === 'ok');
-    if(!ok) alert("Une ou plusieurs lignes n'ont pas pu être mises à jour.");
+    return results.every(t => String(t).trim().toLowerCase() === 'ok');
   }
-  async function validerCommandeGroup(rowNumbers){
-    await callActionForRows('valider', rowNumbers);
-    await fetchCommandes();
-  }
-  async function unvaliderCommandeGroup(rowNumbers){
-    await callActionForRows('unvalider', rowNumbers);
-    await fetchCommandes();
-  }
-  async function payerCommandeGroup(rowNumbers){
-    if(!confirm("Marquer cette commande comme PAYÉE et l'archiver ?")) return;
-    await callActionForRows('payer', rowNumbers);
-    await fetchCommandes();
-  }
+  const validerCommandeGroup   = (rows) => callRowAction('valider', rows);
+  const unvaliderCommandeGroup = (rows) => callRowAction('unvalider', rows);
+  const payerCommandeGroup     = (rows) => callRowAction('payer', rows);
 
+  /** ---------- Carte commande ---------- **/
   function telHref(phone){
     const digits = String(phone||'').replace(/[^\d+]/g,'');
     return digits ? `tel:${digits}` : null;
@@ -258,19 +248,19 @@
     const card = document.createElement("div");
     card.className = "commande-card";
 
-    // Titre (Nom + ID compact)
+    // Titre (Nom + ID court)
     const h2 = document.createElement("h2");
     const t  = new Date(c["Horodatage"]);
     const id = isNaN(t.getTime())
       ? "#" + Math.floor(100000 + Math.random()*900000)
       : `#${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}`;
-    h2.textContent = `${c["Nom"]||""} ${id}`;
+    h2.textContent = `${c["Nom"] || ""} ${id}`;
     card.appendChild(h2);
 
     // Créée / Locker / Tel / Horaire
     const dt = document.createElement("div");
     dt.className = "info tiny";
-    dt.innerHTML = `<span class="label">🗓️ Créée :</span> ${c["Horodatage"]||"—"}`;
+    dt.innerHTML = `<span class="label">🗓️ Créée :</span> ${c["Horodatage"] || "—"}`;
     card.appendChild(dt);
 
     const locker = document.createElement("div");
@@ -289,19 +279,22 @@
     card.appendChild(horaire);
 
     // Items
-    const pokeRows   = group.rows.filter(r => (r["Type"]==='poke' || r["Type"]==='menu'));
-    const simpleRows = group.rows.filter(r => !(r["Type"]==='poke' || r["Type"]==='menu'));
+    const pokeRows   = group.rows.filter(r => (r["Type"] === 'poke' || r["Type"] === 'menu'));
+    const simpleRows = group.rows.filter(r => !(r["Type"] === 'poke' || r["Type"] === 'menu'));
+
     pokeRows.forEach(r => {
       const block = document.createElement("div");
       block.innerHTML = renderPokeOrMenu(r);
       card.appendChild(block);
     });
+
     if(simpleRows.length){
       const lab = document.createElement("div");
       lab.className = "label";
       lab.textContent = "🧁 Articles complémentaires :";
       card.appendChild(lab);
-      simpleRows.forEach(r=>{
+
+      simpleRows.forEach(r => {
         const block = document.createElement("div");
         block.innerHTML = renderSimpleItem(r);
         card.appendChild(block);
@@ -309,14 +302,14 @@
     }
 
     // Remarques
-    if(c["Commentaires"]){
+    if (c["Commentaires"]) {
       const rem = document.createElement("div");
       rem.className = "info";
       rem.innerHTML = `<span class="label">📝 Remarques :</span> ${c["Commentaires"]}`;
       card.appendChild(rem);
     }
 
-    // Footer : Total + boutons selon l’onglet
+    // Footer : total + boutons
     const footer = document.createElement("div");
     footer.className = "card-actions";
 
@@ -325,10 +318,9 @@
     footer.appendChild(totalDiv);
 
     const btns = document.createElement("div");
-    btns.style.display = "flex";
-    btns.style.gap = ".4rem";
+    btns.style.display = "flex"; btns.style.gap = ".4rem"; btns.style.flexWrap = "wrap";
 
-    // appeler
+    // Appeler
     const callHref = telHref(c["Téléphone"]);
     const bCall = document.createElement("button");
     bCall.className = "btn secondary";
@@ -336,7 +328,7 @@
     if(callHref){ bCall.onclick = ()=> window.location.href = callHref; } else { bCall.disabled = true; }
     btns.appendChild(bCall);
 
-    // imprimer
+    // Imprimer
     const bPrint = document.createElement("button");
     bPrint.className = "btn secondary";
     bPrint.textContent = "🖨️ Imprimer";
@@ -347,91 +339,113 @@
     };
     btns.appendChild(bPrint);
 
-    // boutons d'état selon onglet
-    if(SHOW_VALIDATED){
-      // onglet VALIDÉES → Revenir en cours + Payée
+    // Boutons selon la vue
+    if (!SHOW_VALIDATED) {
+      // Vue "En cours" -> bouton pour VALIDER
+      const bOk = document.createElement("button");
+      bOk.className = "btn warn";
+      bOk.textContent = "Commande prête";
+      bOk.onclick = async ()=> {
+        const ok = await validerCommandeGroup(group.rowNumbers);
+        if(!ok) alert("Une ou plusieurs lignes n'ont pas pu être validées.");
+        fetchCommandes();
+      };
+      btns.appendChild(bOk);
+    } else {
+      // Vue "Validées" -> Revenir en cours + Payée
       const bBack = document.createElement("button");
       bBack.className = "btn";
       bBack.textContent = "↩️ Revenir en cours";
-      bBack.onclick = ()=> unvaliderCommandeGroup(group.rowNumbers);
+      bBack.onclick = async ()=>{
+        const ok = await unvaliderCommandeGroup(group.rowNumbers);
+        if(!ok) alert("Impossible d'annuler la validation sur une ou plusieurs lignes.");
+        fetchCommandes();
+      };
       btns.appendChild(bBack);
 
       const bPaid = document.createElement("button");
       bPaid.className = "btn warn";
       bPaid.textContent = "💶 Payée";
-      bPaid.onclick = ()=> payerCommandeGroup(group.rowNumbers);
+      bPaid.onclick = async ()=>{
+        const ok = await payerCommandeGroup(group.rowNumbers);
+        if(!ok) alert("Impossible de marquer payée.");
+        fetchCommandes();
+      };
       btns.appendChild(bPaid);
-    } else {
-      // onglet EN COURS → Commande prête
-      const bOk = document.createElement("button");
-      bOk.className = "btn warn";
-      bOk.textContent = "Commande prête";
-      bOk.onclick = ()=> validerCommandeGroup(group.rowNumbers);
-      btns.appendChild(bOk);
     }
 
     footer.appendChild(btns);
     card.appendChild(footer);
+
     container.appendChild(card);
   }
 
-  /* ========== Fetch + rendu global ========== */
+  /** ---------- Fetch + rendu ---------- **/
   async function fetchCommandes(){
     try{
       const res = await fetch(DATA_URL);
-      const data = await res.json(); // lignes brutes
+      const data = await res.json();
       const container = document.getElementById("commandeTable");
       container.innerHTML = "";
 
       const groups = groupRows(data);
       LAST_GROUPS = groups;
 
-      // filtres : on cache toujours les commandes payées
-      const toShow = SHOW_VALIDATED
-        ? groups.filter(g => g.allValidated && !g.anyPaid)
-        : groups.filter(g => !g.allValidated && !g.anyPaid);
+      // 1) On masque TOUTES les "payées"
+      let visible = groups.filter(g => !g.allPaid);
 
-      if(!toShow.length){
-        container.innerHTML = "<p>Aucune commande à afficher ✅</p>";
+      // 2) Filtre par vue :
+      //    - SHOW_VALIDATED = false -> seulement NON validées (en cours)
+      //    - SHOW_VALIDATED = true  -> seulement TOUTES validées
+      visible = visible.filter(g => SHOW_VALIDATED ? g.allValidated : !g.allValidated);
+
+      if(!visible.length){
+        container.innerHTML = SHOW_VALIDATED
+          ? "<p>Aucune commande validée à afficher ✅</p>"
+          : "<p>Aucune commande en cours à afficher ✅</p>";
         return;
       }
-      toShow.forEach(renderCommandeCard);
+      visible.forEach(renderCommandeCard);
     }catch(err){
       console.error("Erreur fetchCommandes :", err);
       alert("Erreur lors du chargement des commandes.");
     }
   }
 
-  /* ========== Toolbar actions ========== */
+  // Toolbar
   document.getElementById('btnRefresh').onclick = fetchCommandes;
   document.getElementById('btnToggleValidated').onclick = ()=>{
     SHOW_VALIDATED = !SHOW_VALIDATED;
-    // changer le libellé du bouton pour plus de clarté
     document.getElementById('btnToggleValidated').textContent =
-      SHOW_VALIDATED ? "👁️ Afficher commandes en cours" : "👁️ Afficher commandes validées";
+      SHOW_VALIDATED ? "👁️ Afficher commandes EN COURS" : "👁️ Afficher commandes VALIDÉES";
     fetchCommandes();
   };
   document.getElementById('btnPrint').onclick = ()=> window.print();
   document.getElementById('btnValidateAll').onclick = async ()=>{
-    const groups = SHOW_VALIDATED
-      ? LAST_GROUPS.filter(g => g.allValidated && !g.anyPaid) // validées affichées
-      : LAST_GROUPS.filter(g => !g.allValidated && !g.anyPaid); // en cours affichées
-    if(!groups.length) return;
-    if(!confirm(`Valider ${groups.length} commande(s) affichée(s) ?`)) return;
-    for(const g of groups){
+    // Valide toutes les commandes visibles (en cours)
+    if (SHOW_VALIDATED) { fetchCommandes(); return; }
+    const containerGroups = LAST_GROUPS
+      .filter(g => !g.allPaid)
+      .filter(g => !g.allValidated);
+    if(!containerGroups.length) return;
+    if(!confirm(`Valider ${containerGroups.length} commande(s) affichée(s) ?`)) return;
+    for(const g of containerGroups){
       await validerCommandeGroup(g.rowNumbers);
     }
+    fetchCommandes();
   };
 
   document.addEventListener("DOMContentLoaded", ()=>{
-    // Ajuster le libellé initial
-    document.getElementById('btnToggleValidated').textContent = "👁️ Afficher commandes validées";
+    // libellé initial du bouton toggle
+    document.getElementById('btnToggleValidated').textContent = "👁️ Afficher commandes VALIDÉES";
     fetchCommandes();
   });
 </script>
 
+
 </body>
 </html>
+
 
 
 
