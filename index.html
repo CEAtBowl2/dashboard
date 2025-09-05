@@ -62,30 +62,31 @@
   // URLs
   const DATA_URL = "/.netlify/functions/proxy"; 
   const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
-let META = { colValidIdx: null, colPayeeIdx: null };
 
-async function loadMeta() {
-  const res = await fetch(`${VALIDATION_URL}?action=meta`);
-  const json = await res.json();
-  META = { colValidIdx: json.colValidIdx, colPayeeIdx: json.colPayeeIdx };
-}
+  // META colonnes (Validée / Payée)
+  let META = { colValidIdx: null, colPayeeIdx: null };
+  async function loadMeta() {
+    const res = await fetch(`${VALIDATION_URL}?action=meta`);
+    const json = await res.json();
+    META = { colValidIdx: json.colValidIdx, colPayeeIdx: json.colPayeeIdx };
+  }
 
-// écriture fiable par INDEX (0-based) dans la sheet
-async function setCell(row, colIdx0, value) {
-  const url = `${VALIDATION_URL}?action=set&row=${row}&col=${colIdx0}&value=${encodeURIComponent(value)}`;
-  const t = await fetch(url).then(r=>r.text());
-  if (t.trim().toLowerCase() !== 'ok') throw new Error('set failed: ' + t);
-}
+  // écriture fiable par INDEX (0-based) dans la sheet
+  async function setCell(row, colIdx0, value) {
+    const url = `${VALIDATION_URL}?action=set&row=${row}&col=${colIdx0}&value=${encodeURIComponent(value)}`;
+    const t = await fetch(url).then(r=>r.text());
+    if (t.trim().toLowerCase() !== 'ok') throw new Error('set failed: ' + t);
+  }
 
-// bascules “Validée” et “Payée” (pour UNE ligne)
-async function toggleValidee(row, currentlyValidated) {
-  if (META.colValidIdx == null) throw new Error('colValidIdx manquant');
-  await setCell(row, META.colValidIdx, currentlyValidated ? '' : 'V');
-}
-async function togglePayee(row, currentlyPaid) {
-  if (META.colPayeeIdx == null) throw new Error('colPayeeIdx manquant');
-  await setCell(row, META.colPayeeIdx, currentlyPaid ? '' : 'V');
-}
+  // bascules “Validée” et “Payée”
+  async function toggleValidee(row, currentlyValidated) {
+    if (META.colValidIdx == null) throw new Error('colValidIdx manquant');
+    await setCell(row, META.colValidIdx, currentlyValidated ? '' : 'V');
+  }
+  async function togglePayee(row, currentlyPaid) {
+    if (META.colPayeeIdx == null) throw new Error('colPayeeIdx manquant');
+    await setCell(row, META.colPayeeIdx, currentlyPaid ? '' : 'V');
+  }
 
   // State
   let SHOW_VALIDATED = false; // false = "en cours" ; true = "validées"
@@ -503,6 +504,7 @@ btns.appendChild(bPaid);
 
 </body>
 </html>
+
 
 
 
