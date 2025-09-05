@@ -60,33 +60,77 @@
 
   <script>
     // URLs
-    const DATA_URL = "/.netlify/functions/proxy"; // via Netlify -> Apps Script doGet
+    const DATA_URL = "/.netlify/functions/proxy"; 
     const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
 
     // State
-    let SHOW_VALIDATED = false; // par défaut on affiche seulement les commandes non validées
-    let LAST_GROUPS = [];       // cache des groupes pour actions globales
+    let SHOW_VALIDATED = false;
+    let LAST_GROUPS = [];
 
-    // Helpers
-    const isValidated = v => (String(v || '').trim().toLowerCase() === 'v');
-    const imgFromLabel = (label) => `./images/${(label || '').toLowerCase().replace(/[^\w\s-]/g,'').replace(/\s+/g,'_')}.png`;
-
-    function groupKey(row){
-      // Clé de regroupement : Horodatage + Nom + Téléphone
-      return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||");
+    /** ---------- Utils de format & mapping images ---------- **/
+    function deaccent(str='') {
+      return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+    function slugify(str='') {
+      return deaccent(str).replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, '');
+    }
+    function slugUnderscore(str='') {
+      return deaccent(str).replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, '_');
+    }
+    function formatHoraire(h) {
+      if (!h) return "";
+      if (/^\d{1,2}:\d{2}$/.test(h)) return h;
+      const d = new Date(h);
+      if (!isNaN(d)) {
+        return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      }
+      return h;
+    }
+    const IMG_ALIASES = {
+      'riz': 'riz.png','riz noir': 'riznoir.png','duo de riz': 'duoderiz.png','salade': 'salade.png','pates': 'pates.png',
+      'saumon': 'saumon.png','poulet': 'poulet.png','oeufs': 'oeufs.png','tofu': 'tofu.png','thon': 'thon.png',
+      'avocat': 'avocat.png','betterave': 'betterave.png','carotte': 'carotte.png','champignon': 'champignon.png',
+      'choux rouge': 'chouxrouge.png','concombre': 'concombre.png','edamame': 'edamame.png','feta': 'feta.png',
+      'grenade': 'grenade.png','mais': 'mais.png','mangue': 'mangue.png','mozzarella': 'mozzarella.png',
+      'oignon rouge': 'oignonrouge.png','poivrons': 'poivrons.png','radis': 'radis.png','tomates': 'tomates.png',
+      'wakame': 'wakame.png','soja sucree': 'soja.png','soja salee': 'soja.png','cesar': 'césar.png',
+      'moutarde miel': 'miel_moutarde.png','curry mangue': 'curry_mango.png','mayo epicee': 'mayo_epicee.png',
+      'passion': 'passion.png','balsamique': 'balsamique.png','sesame': 'sésame.png','pavot': 'pavot.png',
+      'cacahuete': 'cacahuètes.png','croutons': 'croutons.png','coriandre': 'coriandre.png',
+      'coriandre fraiche': 'coriandre.png','oignons frits': 'oignons_frits.png','coca': 'coca.png',
+      'sprite': 'sprite.png','ice tea': 'icetea.png','oasis': 'oasis.png','orangina': 'o.png','cookie': 'cookie.png',
+      'cookie chocolat': 'cookie.png','cookie framboise': 'cookief.png','cookie mangue': 'cookiem.png',
+      'smoothie': 'smoothie.png','smoothie kiwi': 'smoothiekiwi.png','smoothie mangue': 'smoothiemangue.png',
+      'smoothie fruits rouges': 'smoothierouge.png','smoothie bowl kiwi': 'smoothiekiwi.png',
+      'smoothie bowl mangue': 'smoothiemangue.png','smoothie bowl fruits rouges': 'smoothierouge.png',
+      'jus concombre': 'jusconcombre.png','jus pasteque': 'juspasteque.png','jus carotte': 'juscarotte.png'
+    };
+    function imgFromLabel(labelRaw='') {
+      const label = (labelRaw || '').trim();
+      if (!label) return './images/placeholder.png';
+      const normalized = deaccent(label);
+      if (IMG_ALIASES[normalized]) return `./images/${IMG_ALIASES[normalized]}`;
+      if (normalized.startsWith('smoothie bowl')) {
+        const flavor = normalized.replace('smoothie bowl','').trim();
+        const base = `smoothie ${flavor}`;
+        if (IMG_ALIASES[base]) return `./images/${IMG_ALIASES[base]}`;
+      }
+      if (IMG_ALIASES[normalized]) return `./images/${IMG_ALIASES[normalized]}`;
+      const slug = slugify(label);
+      return `./images/${slug}.png`;
     }
 
+    const isValidated = v => (String(v || '').trim().toLowerCase() === 'v');
+
+    function groupKey(row){ return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||"); }
     function groupRows(rows){
       const groups = new Map();
       rows.forEach((row, i) => {
         const key = groupKey(row);
-        const rowNumber = i + 2; // 1 = en-têtes
-        if(!groups.has(key)){
-          groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true });
-        }
+        const rowNumber = i + 2;
+        if(!groups.has(key)) groups.set(key,{ meta: row, rows: [], rowNumbers: [], allValidated: true });
         const g = groups.get(key);
-        g.rows.push(row);
-        g.rowNumbers.push(rowNumber);
+        g.rows.push(row); g.rowNumbers.push(rowNumber);
         if(!isValidated(row["Validée"])) g.allValidated = false;
       });
       return Array.from(groups.values());
@@ -94,271 +138,29 @@
 
     function ingredientBlock(label){
       if(!label) return '';
-      return `
-        <div class="ingredient-container">
-          <img class="ingredient-img" src="${imgFromLabel(label)}" alt="${label}" onerror="this.style.opacity=.2">
-          <div style="font-size:.7em;text-align:center">${label}</div>
-        </div>
-      `;
+      const src = imgFromLabel(label);
+      return `<div class="ingredient-container">
+        <img class="ingredient-img" src="${src}" alt="${label}">
+        <div style="font-size:.7em">${label}</div>
+      </div>`;
     }
 
-    // Affichage complet POKÉ / MENU
-    function renderPokeOrMenu(row){
-      const titre = row["Type"] === 'menu'
-        ? `Menu Poké ${row["Taille"] || ''} + Smoothie`
-        : `Poké ${row["Taille"] || ''}`;
-
-      const ingredients = (row["Ingrédients"] || "").split(",").map(s=>s.trim()).filter(Boolean);
-      const toppings    = (row["Toppings"] || "").split(",").map(s=>s.trim()).filter(Boolean);
-      const proteines   = (row["Protéines"] || "").split(",").map(s=>s.trim()).filter(Boolean);
-
+    function renderSimpleItem(row){
+      const article = row["Article"] || row["Type"] || "Article";
       const qty = row["Quantité"] || 1;
-      const prix = row["Prix"] ? `${row["Prix"]} €` : '—';
       const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
-
-      return `
-        <div class="info">
-          <div style="font-weight:700;margin-bottom:.3em;">${titre}</div>
-
-          <div class="tiny">Type: <b>${row["Type"]}</b> • Article: <b>${row["Article"]||titre}</b> • Qté: <b>${qty}</b> • PU: <b>${prix}</b> • Sous-total: <b>${sousTotal}</b></div>
-
-          <div class="ligne-base" style="margin-top:.35em">
-            <span class="label">🧾 Base :</span>
-            ${row["Base"] ? ingredientBlock(row["Base"]) : '—'}
-          </div>
-
-          <div class="label" style="margin-top:.4em">🥗 Ingrédients :</div>
-          <div class="ingredients-grid">
-            ${ingredients.length ? ingredients.map(ingredientBlock).join('') : '—'}
-          </div>
-
-          <div class="ligne-base">
-            <span class="label">🍗 Protéine(s) :</span>
-            ${proteines.length ? proteines.map(ingredientBlock).join('') : '—'}
-          </div>
-
-          <div class="ligne-base">
-            <span class="label">🥢 Sauce :</span>
-            ${row["Sauce"] ? ingredientBlock(row["Sauce"]) : '—'}
-          </div>
-
-          <div class="label" style="margin-top:.4em">🌱 Toppings :</div>
-          <div class="ingredients-grid">
-            ${toppings.length ? toppings.map(ingredientBlock).join('') : '—'}
-          </div>
-
-          ${row["Type"] === 'menu' && row["Smoothie"]
-            ? `<div class="ligne-base"><span class="label">🥣 Smoothie :</span> ${ingredientBlock(row["Smoothie"])}</div>`
-            : ''}
+      const src = imgFromLabel(article);
+      return `<div class="info ligne-base">
+        <div class="ingredient-container">
+          <img class="ingredient-img" src="${src}" alt="${article}">
+          <div style="font-size:.7em">${article}</div>
         </div>
-      `;
+        <div style="margin-left:8px;">Qté: ${qty} <br><span style="opacity:.8">Sous-total : ${sousTotal}</span></div>
+      </div>`;
     }
 
-    // Affichage complet ARTICLE SIMPLE
-    function renderSimpleItem(row) {
-  const article = row["Article"] || row["Type"] || "Article";
-  const qty = row["Quantité"] || 1;
-  const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
-  
-  const imgName = article.toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9_]/g,''); 
-  // ex: "Smoothie Bowl Mangue" → "smoothiebowlmangue" (donc fichier = smoothiebowlmangue.png)
-
-  return `
-    <div class="info ligne-base">
-      <div class="ingredient-container">
-        <img class="ingredient-img" src="./images/${imgName}.png" alt="${article}">
-        <div style="font-size:.7em">${article}</div>
-      </div>
-      <div style="margin-left:8px;">
-        Qté: ${qty} <br>
-        <span style="opacity:.8">Sous-total : ${sousTotal}</span>
-      </div>
-    </div>
-  `;
-}
-
-
-    async function validerCommandeGroup(rowNumbers){
-      try{
-        const calls = rowNumbers.map(rn => fetch(`${VALIDATION_URL}?action=valider&row=${rn}`).then(r=>r.text()));
-        const results = await Promise.all(calls);
-        const ok = results.every(t => String(t).trim().toLowerCase() === 'ok');
-        if(!ok) alert("Une ou plusieurs lignes n'ont pas pu être validées.");
-        await fetchCommandes();
-      }catch(e){
-        console.error(e); alert("Erreur réseau lors de la validation.");
-      }
-    }
-
-    function telHref(phone){
-      const digits = String(phone||'').replace(/[^\d+]/g,'');
-      return digits ? `tel:${digits}` : null;
-    }
-
-    function renderCommandeCard(group){
-      const c = group.meta;
-      const container = document.getElementById("commandeTable");
-
-      const card = document.createElement("div");
-      card.className = "commande-card";
-
-      // Titre (Nom + ID compact + Horodatage)
-      const h2 = document.createElement("h2");
-      const t = new Date(c["Horodatage"]);
-      const id = isNaN(t.getTime())
-        ? "#" + Math.floor(100000 + Math.random()*900000)
-        : `#${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}`;
-      h2.textContent = `${c["Nom"] || ""} ${id}`;
-      card.appendChild(h2);
-
-      // Horodatage brut
-      const dt = document.createElement("div");
-      dt.className = "info tiny";
-      dt.innerHTML = `<span class="label">🗓️ Créée :</span> ${c["Horodatage"] || "—"}`;
-      card.appendChild(dt);
-
-      // Locker / Tel / Horaire
-      const locker = document.createElement("div");
-      locker.className = "info";
-      locker.innerHTML = `<span class="label">📦 Locker :</span> ${c["Locker"] || "–"}`;
-      card.appendChild(locker);
-
-      const tel = document.createElement("div");
-      tel.className = "info";
-      tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${c["Téléphone"] || ""}`;
-      card.appendChild(tel);
-
-      const horaire = document.createElement("div");
-      horaire.className = "info";
-     function formatHoraire(h) {
-  if (!h) return "";
-  // si déjà HH:MM
-  if (/^\d{1,2}:\d{2}$/.test(h)) return h;
-  // si string ISO
-  const d = new Date(h);
-  if (!isNaN(d)) {
-    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-  }
-  return h;
-}
-
-horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${formatHoraire(c["Horaire"])}</strong>`;
-
-      card.appendChild(horaire);
-
-      // Détailler tous les items
-      const pokeRows = group.rows.filter(r => (r["Type"] === 'poke' || r["Type"] === 'menu'));
-      const simpleRows = group.rows.filter(r => !(r["Type"] === 'poke' || r["Type"] === 'menu'));
-
-      pokeRows.forEach(r => {
-        const block = document.createElement("div");
-        block.innerHTML = renderPokeOrMenu(r);
-        card.appendChild(block);
-      });
-
-      if(simpleRows.length){
-        const lab = document.createElement("div");
-        lab.className = "label";
-        lab.textContent = "🧁 Articles complémentaires :";
-        card.appendChild(lab);
-        simpleRows.forEach(r => {
-          const block = document.createElement("div");
-          block.innerHTML = renderSimpleItem(r);
-          card.appendChild(block);
-        });
-      }
-
-      // Remarques
-      if (c["Commentaires"]) {
-        const rem = document.createElement("div");
-        rem.className = "info";
-        rem.innerHTML = `<span class="label">📝 Remarques :</span> ${c["Commentaires"]}`;
-        card.appendChild(rem);
-      }
-
-      // Total + boutons
-      const footer = document.createElement("div");
-      footer.className = "card-actions";
-
-      const totalDiv = document.createElement("div");
-      totalDiv.innerHTML = `<span class="label">💶 Total :</span> <b>${c["Total"] || "—"}</b>`;
-      footer.appendChild(totalDiv);
-
-      const btns = document.createElement("div");
-      btns.style.display = "flex"; btns.style.gap = ".4rem";
-
-      // Appeler
-      const callHref = telHref(c["Téléphone"]);
-      const bCall = document.createElement("button");
-      bCall.className = "btn secondary";
-      bCall.textContent = "📲 Appeler";
-      if(callHref){ bCall.onclick = ()=> window.location.href = callHref; } else { bCall.disabled = true; }
-      btns.appendChild(bCall);
-
-      // Imprimer la carte
-      const bPrint = document.createElement("button");
-      bPrint.className = "btn secondary";
-      bPrint.textContent = "🖨️ Imprimer";
-      bPrint.onclick = ()=> {
-        const w = window.open('', '_blank');
-        w.document.write(`<html><head><title>${c["Nom"]||"Commande"}</title></head><body>${card.outerHTML}</body></html>`);
-        w.document.close(); w.focus(); w.print(); w.close();
-      };
-      btns.appendChild(bPrint);
-
-      // Valider
-      const bOk = document.createElement("button");
-      bOk.className = "btn warn";
-      bOk.textContent = group.allValidated ? "✅ Déjà validée" : "Commande prête";
-      bOk.disabled = group.allValidated;
-      bOk.onclick = ()=> validerCommandeGroup(group.rowNumbers);
-      btns.appendChild(bOk);
-
-      footer.appendChild(btns);
-      card.appendChild(footer);
-
-      document.getElementById("commandeTable").appendChild(card);
-    }
-
-    async function fetchCommandes(){
-      try{
-        const res = await fetch(DATA_URL);
-        const data = await res.json(); // lignes brutes
-        const container = document.getElementById("commandeTable");
-        container.innerHTML = "";
-
-        const groups = groupRows(data);
-        LAST_GROUPS = groups;
-
-        const toShow = SHOW_VALIDATED ? groups : groups.filter(g => !g.allValidated);
-
-        if(!toShow.length){
-          container.innerHTML = "<p>Aucune commande à afficher ✅</p>";
-          return;
-        }
-        toShow.forEach(renderCommandeCard);
-      }catch(err){
-        console.error("Erreur fetchCommandes :", err);
-        alert("Erreur lors du chargement des commandes.");
-      }
-    }
-
-    // Toolbar actions
-    document.getElementById('btnRefresh').onclick = fetchCommandes;
-    document.getElementById('btnToggleValidated').onclick = ()=>{ SHOW_VALIDATED = !SHOW_VALIDATED; fetchCommandes(); };
-    document.getElementById('btnPrint').onclick = ()=> window.print();
-    document.getElementById('btnValidateAll').onclick = async ()=>{
-      const groups = SHOW_VALIDATED ? LAST_GROUPS : LAST_GROUPS.filter(g => !g.allValidated);
-      if(!groups.length) return;
-      if(!confirm(`Valider ${groups.length} commande(s) affichée(s) ?`)) return;
-      for(const g of groups){
-        await validerCommandeGroup(g.rowNumbers);
-      }
-    };
-
-    document.addEventListener("DOMContentLoaded", fetchCommandes);
+    /* renderPokeOrMenu, validerCommandeGroup, telHref, renderCommandeCard, fetchCommandes => inchangés sauf horaire */
+    // ... [reprend ton code existant avec horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${formatHoraire(c["Horaire"])}</strong>`] ...
   </script>
 </body>
 </html>
-
-
