@@ -59,6 +59,14 @@
   <div id="commandeTable"></div>
 
 <script>
+  let META = { colValidIdx: null, colPayeeIdx: null };
+
+async function loadMeta() {
+  const res = await fetch(`${VALIDATION_URL}?action=meta`);
+  const json = await res.json();
+  META = { colValidIdx: json.colValidIdx, colPayeeIdx: json.colPayeeIdx };
+}
+
   // URLs
   const DATA_URL = "/.netlify/functions/proxy"; 
   const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
@@ -445,6 +453,7 @@
 
 </body>
 </html>
+
 
 
 
