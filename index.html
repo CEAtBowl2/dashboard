@@ -63,24 +63,32 @@
   const DATA_URL = "/.netlify/functions/proxy"; 
   const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
 
-  // META colonnes (Validée / Payée)
-  let META = { colValidIdx: null, colPayeeIdx: null };
-  async function loadMeta() {
-    const res = await fetch(`${VALIDATION_URL}?action=meta`);
+// --- en haut, après la déclaration de VALIDATION_URL ---
+let META = { colValidIdx: null, colPayeeIdx: null };
+const FALLBACK_META = { colValidIdx: 19, colPayeeIdx: 20 }; // 0-based: Validée=20e, Payée=21e
+
+async function loadMeta() {
+  const res = await fetch(`${VALIDATION_URL}?action=meta`);
+  // si le Apps Script est ancien, il renverra "[]", donc .json() = []
+  // on protège ci-dessous :
+  try {
     const json = await res.json();
-    META = { colValidIdx: json.colValidIdx, colPayeeIdx: json.colPayeeIdx };
-  }
-// --- AJOUTER ICI, juste après loadMeta() ---
+    if (json && typeof json.colValidIdx === 'number' && typeof json.colPayeeIdx === 'number') {
+      META = { colValidIdx: json.colValidIdx, colPayeeIdx: json.colPayeeIdx };
+      return;
+    }
+  } catch(_) {}
+  // fallback si pas de meta exploitable
+  META = { ...FALLBACK_META };
+}
+
 async function ensureMeta() {
   if (META.colValidIdx == null || META.colPayeeIdx == null) {
     await loadMeta();
   }
-  if (isNaN(META.colValidIdx) || META.colValidIdx < 0) {
-    throw new Error('Indice "Validée" invalide');
-  }
-  if (isNaN(META.colPayeeIdx) || META.colPayeeIdx < 0) {
-    throw new Error('Indice "Payée" invalide');
-  }
+  // si toujours pas bon → applique le fallback
+  if (META.colValidIdx == null || META.colValidIdx < 0) META.colValidIdx = FALLBACK_META.colValidIdx;
+  if (META.colPayeeIdx == null || META.colPayeeIdx < 0) META.colPayeeIdx = FALLBACK_META.colPayeeIdx;
 }
 
   // écriture fiable par INDEX (0-based) dans la sheet
@@ -525,6 +533,7 @@ document.getElementById('btnValidateAll').onclick = async ()=>{
 
 </body>
 </html>
+
 
 
 
