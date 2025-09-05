@@ -154,224 +154,248 @@
   </table>
 
   <script>
-    const DATA_URL = "/.netlify/functions/proxy";
-    const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
+  // URLs
+  const DATA_URL = "/.netlify/functions/proxy";
+  const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbzO1YE54lzfF8iZmndAbAxrZILs3V5zkGJt11_dkkJK6ZLd8uAAfpUG0hjMTLXVuIw/exec";
 
-    function fetchCommandes() {
-      fetch(DATA_URL)
-        .then(res => res.json())
-        .then(data => {
-         const container = document.getElementById("commandeTable");
-container.innerHTML = "";
+  // Helpers
+  const imgFromLabel = (label) =>
+    `./images/${(label || '').toLowerCase().replace(/\s+/g,'_')}.png`;
 
+  const isValidated = v => (String(v || '').trim().toLowerCase() === 'v');
 
-          data.forEach((commande, index) => {
-            if ((commande["Validée"] || "").toLowerCase() !== "v") {
-              const card = document.createElement("div");
-card.className = "commande-card";
-              
-const name = document.createElement("h2");
-const randomId = "#" + Math.floor(100000 + Math.random() * 900000);
-name.textContent = (commande["Nom"] || "") + " " + randomId;
-card.appendChild(name);
+  // Clé de regroupement d’une commande
+  function groupKey(row) {
+    // Horodatage tel qu’il ressort de la Sheet + identité client
+    return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||");
+  }
 
-const locker = document.createElement("div");
-locker.className = "info";
-locker.innerHTML = `<span class="label">📦 Locker :</span> ${commande["Locker"] || "–"}`;
-card.appendChild(locker);
+  // Regroupe lignes par commande + conserve les rowNumbers (index+2)
+  function groupRows(rows) {
+    const groups = new Map();
+    rows.forEach((row, i) => {
+      const key = groupKey(row);
+      const rowNumber = i + 2; // 1=header, donc +2
+      if (!groups.has(key)) {
+        groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true });
+      }
+      const g = groups.get(key);
+      g.rows.push(row);
+      g.rowNumbers.push(rowNumber);
+      if (!isValidated(row["Validée"])) g.allValidated = false;
+    });
+    return Array.from(groups.values());
+  }
 
+  // Composant visuel d’un “bloc ingrédient” (image + label)
+  function ingredientBlock(label) {
+    if (!label) return '';
+    return `
+      <div class="ingredient-container">
+        <img class="ingredient-img" src="${imgFromLabel(label)}" alt="${label}">
+        <div style="font-size:.7em">${label}</div>
+      </div>
+    `;
+  }
 
+  // Rend un item POKÉ / MENU
+  function renderPokeOrMenu(row) {
+    const titre = row["Type"] === 'menu'
+      ? `Menu Poké ${row["Taille"] || ''} + Smoothie`
+      : `Poké ${row["Taille"] || ''}`;
 
-           const tel = document.createElement("div");
-tel.className = "info";
-tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${commande["Téléphone"] || ""}`;
-card.appendChild(tel);
-              
-const horaire = document.createElement("div");
-horaire.className = "info";
-horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${commande["Horaire"] || ""}</strong>`;
-card.appendChild(horaire);
+    const ingredients = (row["Ingrédients"] || "")
+      .split(",").map(s => s.trim()).filter(Boolean).slice(0, 12);
 
-const taille = document.createElement("div");
-taille.className = "info";
-taille.innerHTML = `<span class="label">🥣 Taille :</span> <strong>${commande["Taille"] || ""}</strong>`;
-card.appendChild(taille);
+    const toppings = (row["Toppings"] || "")
+      .split(",").map(s => s.trim()).filter(Boolean);
 
-// Base
-const base = document.createElement("div");
-base.className = "info ligne-base";
-if (commande["Base"]) {
-  const label = document.createElement("span");
-  label.className = "label";
-  label.textContent = "🧾 Base :";
-  base.appendChild(label);
+    return `
+      <div class="info">
+        <div style="font-weight:700;margin-bottom:.3em;">${titre}</div>
 
-  const container = document.createElement("div");
-  container.className = "ingredient-container";
+        <div class="ligne-base">
+          <span class="label">🧾 Base :</span>
+          ${row["Base"] ? ingredientBlock(row["Base"]) : '—'}
+        </div>
 
-  const img = document.createElement("img");
-  img.src = `./images/${commande["Base"].toLowerCase().replace(/ /g, "_")}.png`;
-  img.alt = commande["Base"];
-  img.className = "ingredient-img";
+        <div class="label" style="margin-top:.4em">🥗 Ingrédients :</div>
+        <div class="ingredients-grid">
+          ${ingredients.map(ingredientBlock).join('') || '—'}
+        </div>
 
-  const labelImg = document.createElement("div");
-  labelImg.textContent = commande["Base"];
-  labelImg.style.fontSize = "0.7em";
+        <div class="ligne-base">
+          <span class="label">🍗 Protéine(s) :</span>
+          ${row["Protéines"]
+            ? row["Protéines"].split(",").map(s => s.trim()).filter(Boolean).map(ingredientBlock).join('')
+            : '—'}
+        </div>
 
-  container.appendChild(img);
-  container.appendChild(labelImg);
-  base.appendChild(container);
-}
-card.appendChild(base);
+        <div class="ligne-base">
+          <span class="label">🥢 Sauce :</span>
+          ${row["Sauce"] ? ingredientBlock(row["Sauce"]) : '—'}
+        </div>
 
+        <div class="label" style="margin-top:.4em">🌱 Toppings :</div>
+        <div class="ingredients-grid">
+          ${toppings.length ? toppings.map(ingredientBlock).join('') : '—'}
+        </div>
 
+        ${row["Type"] === 'menu' && row["Smoothie"]
+          ? `<div class="ligne-base"><span class="label">🥣 Smoothie :</span> ${ingredientBlock(row["Smoothie"])}</div>`
+          : ''}
+      </div>
+    `;
+  }
 
-// Ingrédients
-const ingLabel = document.createElement("div");
-ingLabel.className = "label";
-ingLabel.textContent = "🥗 Ingrédients :";
-card.appendChild(ingLabel);
+  // Rend un item SIMPLE (cookie, boisson, jus, smoothie bowl, etc.)
+  function renderSimpleItem(row) {
+    const type = row["Type"] || 'article';
+    const article = row["Article"] || type;
+    const qty = row["Quantité"] || 1;
+    const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
+    return `
+      <div class="info">
+        <div><b>${article}</b> &times; ${qty}</div>
+        <div class="tiny" style="opacity:.8">Sous-total : ${sousTotal}</div>
+      </div>
+    `;
+  }
 
-const ingredients = (commande["Ingrédients"] || "").split(",").map(i => i.trim()).filter(i => i);
-const ingGrid = document.createElement("div");
-ingGrid.className = "ingredients-grid";
-ingredients.slice(0, 6).forEach(ingredient => {
-  const container = document.createElement("div");
-  container.className = "ingredient-container";
-  const img = document.createElement("img");
-  img.src = `./images/${ingredient.toLowerCase().replace(/ /g, "_")}.png`;
-  img.alt = ingredient;
-  img.className = "ingredient-img";
-  const label = document.createElement("div");
-  label.textContent = ingredient;
-  label.style.fontSize = "0.7em";
-  container.appendChild(img);
-  container.appendChild(label);
-  ingGrid.appendChild(container);
-});
-card.appendChild(ingGrid);
+  // Valide toutes les lignes d’un groupe (commande)
+  async function validerCommandeGroup(rowNumbers) {
+    try {
+      const calls = rowNumbers.map(rn =>
+        fetch(`${VALIDATION_URL}?action=valider&row=${rn}`).then(res => res.text())
+      );
+      const results = await Promise.all(calls);
+      const ok = results.every(t => String(t).trim().toLowerCase() === 'ok');
+      if (!ok) {
+        alert("Une ou plusieurs lignes n'ont pas pu être validées.");
+      }
+      await fetchCommandes(); // refresh
+    } catch (e) {
+      console.error(e);
+      alert("Erreur réseau lors de la validation.");
+    }
+  }
 
-// Protéines
-const prot = document.createElement("div");
-prot.className = "info ligne-base";
-if (commande["Protéines"]) {
-  const label = document.createElement("span");
-  label.className = "label";
-  label.textContent = "🍗 Protéine :";
-  prot.appendChild(label);
+  // Rendu d’une commande (groupe)
+  function renderCommandeCard(group) {
+    const c = group.meta;
+    const container = document.getElementById("commandeTable");
 
-  const container = document.createElement("div");
-  container.className = "ingredient-container";
+    const card = document.createElement("div");
+    card.className = "commande-card";
 
-  const img = document.createElement("img");
-  img.src = `./images/${commande["Protéines"].toLowerCase().replace(/ /g, "_")}.png`;
-  img.alt = commande["Protéines"];
-  img.className = "ingredient-img";
+    // Titre (client + ID compact)
+    const h2 = document.createElement("h2");
+    const t = new Date(c["Horodatage"]);
+    const id = isNaN(t.getTime())
+      ? "#" + Math.floor(100000 + Math.random() * 900000)
+      : `#${String(t.getHours()).padStart(2,'0')}${String(t.getMinutes()).padStart(2,'0')}${String(t.getSeconds()).padStart(2,'0')}`;
+    h2.textContent = `${c["Nom"] || ""} ${id}`;
+    card.appendChild(h2);
 
-  const labelImg = document.createElement("div");
-  labelImg.textContent = commande["Protéines"];
-  labelImg.style.fontSize = "0.7em";
+    // Locker
+    const locker = document.createElement("div");
+    locker.className = "info";
+    locker.innerHTML = `<span class="label">📦 Locker :</span> ${c["Locker"] || "–"}`;
+    card.appendChild(locker);
 
-  container.appendChild(img);
-  container.appendChild(labelImg);
-  prot.appendChild(container);
-}
-card.appendChild(prot);
+    // Tel
+    const tel = document.createElement("div");
+    tel.className = "info";
+    tel.innerHTML = `<span class="label">📞 Téléphone :</span> ${c["Téléphone"] || ""}`;
+    card.appendChild(tel);
 
-const sauce = document.createElement("div");
-sauce.className = "info ligne-base";
-if (commande["Sauce"]) {
-  const label = document.createElement("span");
-  label.className = "label";
-  label.textContent = "🥢 Sauce :";
-  sauce.appendChild(label);
+    // Horaire
+    const horaire = document.createElement("div");
+    horaire.className = "info";
+    horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${c["Horaire"] || ""}</strong>`;
+    card.appendChild(horaire);
 
-  const container = document.createElement("div");
-  container.className = "ingredient-container";
+    // Liste des items de la commande
+    const pokeRows = group.rows.filter(r => (r["Type"] === 'poke' || r["Type"] === 'menu'));
+    const simpleRows = group.rows.filter(r => !(r["Type"] === 'poke' || r["Type"] === 'menu'));
 
-  const img = document.createElement("img");
-  img.src = `./images/${commande["Sauce"].toLowerCase().replace(/ /g, "_")}.png`;
-  img.alt = commande["Sauce"];
-  img.className = "ingredient-img";
+    // Poké / Menu
+    pokeRows.forEach(r => {
+      const block = document.createElement("div");
+      block.innerHTML = renderPokeOrMenu(r);
+      card.appendChild(block);
+    });
 
-  const labelImg = document.createElement("div");
-  labelImg.textContent = commande["Sauce"];
-  labelImg.style.fontSize = "0.7em";
+    // Articles simples
+    if (simpleRows.length) {
+      const lab = document.createElement("div");
+      lab.className = "label";
+      lab.textContent = "🧁 Articles complémentaires :";
+      card.appendChild(lab);
 
-  container.appendChild(img);
-  container.appendChild(labelImg);
-  sauce.appendChild(container);
-}
-card.appendChild(sauce);
-const topLabel = document.createElement("div");
-topLabel.className = "label";
-topLabel.textContent = "🌱 Toppings :";
-card.appendChild(topLabel);
-
-const toppings = (commande["Toppings"] || "").split(",").map(t => t.trim()).filter(t => t);
-const topGrid = document.createElement("div");
-topGrid.className = "ingredients-grid";
-
-toppings.forEach(topping => {
-  const container = document.createElement("div");
-  container.className = "ingredient-container";
-  const img = document.createElement("img");
-  img.src = `./images/${topping.toLowerCase().replace(/ /g, "_")}.png`;
-  img.alt = topping;
-  img.className = "ingredient-img";
-  const label = document.createElement("div");
-  label.textContent = topping;
-  label.style.fontSize = "0.7em";
-  container.appendChild(img);
-  container.appendChild(label);
-  topGrid.appendChild(container);
-});
-card.appendChild(topGrid);
-
-
-// Remarques
-const remarques = document.createElement("div");
-remarques.className = "info";
-remarques.innerHTML = `<span class="label">📝 Remarques :</span> ${commande["Commentaires"] || ""}`;
-card.appendChild(remarques);
-
-// Bouton
-const btn = document.createElement("button");
-btn.textContent = "Commande prête";
-btn.onclick = () => validerCommande(index + 2);
-card.appendChild(btn);
-
-// Ajouter à la page
-container.appendChild(card);
-
-
-            }
-          });
-        })
-        .catch(err => {
-          console.error("Erreur fetchCommandes :", err);
-          alert("Erreur lors du chargement des commandes.");
-        });
+      simpleRows.forEach(r => {
+        const block = document.createElement("div");
+        block.innerHTML = renderSimpleItem(r);
+        card.appendChild(block);
+      });
     }
 
-    function validerCommande(rowNumber) {
-      const url = `${VALIDATION_URL}?action=valider&row=${rowNumber}`;
-      fetch(url)
-        .then(res => res.text())
-        .then(text => {
-          if (text.trim().toLowerCase() === "ok") {
-            setTimeout(fetchCommandes, 1000);
-          } else {
-            alert("Erreur côté script : " + text);
-          }
-        })
-        .catch(error => {
-          console.error("Erreur réseau :", error);
-          alert("Erreur réseau lors de la validation.");
-        });
+    // Remarques (Commentaires)
+    if (c["Commentaires"]) {
+      const rem = document.createElement("div");
+      rem.className = "info";
+      rem.innerHTML = `<span class="label">📝 Remarques :</span> ${c["Commentaires"]}`;
+      card.appendChild(rem);
     }
 
-    document.addEventListener("DOMContentLoaded", fetchCommandes);
-  </script>
+    // Total + bouton
+    const bottom = document.createElement("div");
+    bottom.style.display = "flex";
+    bottom.style.alignItems = "center";
+    bottom.style.justifyContent = "space-between";
+    bottom.style.marginTop = "0.6em";
+
+    const totalDiv = document.createElement("div");
+    totalDiv.innerHTML = `<span class="label">💶 Total :</span> <b>${c["Total"] || "—"}</b>`;
+    bottom.appendChild(totalDiv);
+
+    const btn = document.createElement("button");
+    btn.textContent = group.allValidated ? "✅ Déjà validée" : "Commande prête";
+    btn.disabled = group.allValidated;
+    btn.onclick = () => validerCommandeGroup(group.rowNumbers);
+    bottom.appendChild(btn);
+
+    card.appendChild(bottom);
+    container.appendChild(card);
+  }
+
+  // Fetch + render
+  async function fetchCommandes() {
+    try {
+      const res = await fetch(DATA_URL);
+      const data = await res.json(); // tableau brut des lignes
+      const container = document.getElementById("commandeTable");
+      container.innerHTML = "";
+
+      // Filtrer les lignes non validées OU les grouper puis afficher (on affiche seulement les commandes ayant au moins une ligne non validée)
+      const groups = groupRows(data);
+      const pending = groups.filter(g => !g.allValidated);
+
+      if (!pending.length) {
+        container.innerHTML = "<p>Aucune commande en attente ✅</p>";
+        return;
+      }
+
+      pending.forEach(renderCommandeCard);
+    } catch (err) {
+      console.error("Erreur fetchCommandes :", err);
+      alert("Erreur lors du chargement des commandes.");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", fetchCommandes);
+</script>
+
 </body>
 </html>
+
