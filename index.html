@@ -155,22 +155,28 @@
     }
 
     // Affichage complet ARTICLE SIMPLE
-    function renderSimpleItem(row){
-      const type = row["Type"] || 'article';
-      const article = row["Article"] || type;
-      const qty = row["Quantité"] || 1;
-      const prix = row["Prix"] ? `${row["Prix"]} €` : '—';
-      const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
+    function renderSimpleItem(row) {
+  const article = row["Article"] || row["Type"] || "Article";
+  const qty = row["Quantité"] || 1;
+  const sousTotal = row["Sous-total"] ? `${row["Sous-total"]} €` : '—';
+  
+  const imgName = article.toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9_]/g,''); 
+  // ex: "Smoothie Bowl Mangue" → "smoothiebowlmangue" (donc fichier = smoothiebowlmangue.png)
 
-      return `
-        <div class="info">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
-            <div><b>${article}</b> <span class="tiny">(${type})</span></div>
-            <div class="tiny">Qté: <b>${qty}</b> • PU: <b>${prix}</b> • ST: <b>${sousTotal}</b></div>
-          </div>
-        </div>
-      `;
-    }
+  return `
+    <div class="info ligne-base">
+      <div class="ingredient-container">
+        <img class="ingredient-img" src="./images/${imgName}.png" alt="${article}">
+        <div style="font-size:.7em">${article}</div>
+      </div>
+      <div style="margin-left:8px;">
+        Qté: ${qty} <br>
+        <span style="opacity:.8">Sous-total : ${sousTotal}</span>
+      </div>
+    </div>
+  `;
+}
+
 
     async function validerCommandeGroup(rowNumbers){
       try{
@@ -354,4 +360,5 @@ horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${formatH
   </script>
 </body>
 </html>
+
 
