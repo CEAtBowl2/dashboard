@@ -110,6 +110,37 @@ async function togglePayee(row, currentlyPaid) {
   await setCell(row, META.colPayeeIdx, currentlyPaid ? '' : 'V');
 }
 
+// --- Helper: récupère toujours un TABLEAU depuis DATA_URL ---
+async function fetchRows() {
+  const res = await fetch(DATA_URL);
+
+  // essaie de lire en JSON
+  let payload;
+  try {
+    payload = await res.json();
+  } catch {
+    // certains proxies renvoient du texte JSON (double encodage)
+    const txt = await res.text();
+    try { payload = JSON.parse(txt); }
+    catch {
+      console.error('Réponse non-JSON de DATA_URL:', txt);
+      throw new Error('DATA_URL n’a pas renvoyé du JSON lisible');
+    }
+  }
+
+  // si double-encodé : payload = '{"..."}'
+  if (typeof payload === 'string') {
+    try { payload = JSON.parse(payload); } catch {}
+  }
+
+  // normalise en tableau (gère {data: [...]}, {rows: [...]}, ou tableau direct)
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  if (payload && Array.isArray(payload.rows)) return payload.rows;
+
+  console.error('Payload reçu depuis DATA_URL =', payload);
+  throw new Error('Le proxy ne renvoie pas un tableau de lignes');
+}
 
   // State
   let SHOW_VALIDATED = false; // false = "en cours" ; true = "validées"
@@ -173,22 +204,27 @@ async function togglePayee(row, currentlyPaid) {
     return [row["Horodatage"], row["Nom"], row["Téléphone"]].join("||");
   }
 
-  function groupRows(rows){
-    const groups = new Map();
-    rows.forEach((row, i) => {
-      const key = groupKey(row);
-      const rowNumber = i + 2; // entêtes ligne 1 => +2
-      if(!groups.has(key)){
-        groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true, allPaid: true });
-      }
-      const g = groups.get(key);
-      g.rows.push(row);
-      g.rowNumbers.push(rowNumber);
-      if (!isValidated(row["Validée"])) g.allValidated = false;
-      if (!isPaid(row["Payée"]))       g.allPaid = false;
-    });
-    return Array.from(groups.values());
+ function groupRows(rows = []) {
+  if (!Array.isArray(rows)) {
+    console.error('groupRows: rows doit être un tableau, reçu =', rows);
+    return [];
   }
+  const groups = new Map();
+  rows.forEach((row, i) => {
+    const key = groupKey(row);
+    const rowNumber = i + 2; // entêtes ligne 1 => +2
+    if(!groups.has(key)){
+      groups.set(key, { meta: row, rows: [], rowNumbers: [], allValidated: true, allPaid: true });
+    }
+    const g = groups.get(key);
+    g.rows.push(row);
+    g.rowNumbers.push(rowNumber);
+    if (!isValidated(row["Validée"])) g.allValidated = false;
+    if (!isPaid(row["Payée"]))       g.allPaid = false;
+  });
+  return Array.from(groups.values());
+}
+
 
   /** ---------- UI blocks ---------- **/
   function ingredientBlock(label){
@@ -469,12 +505,12 @@ btns.appendChild(bPaid);
   /** ---------- Fetch + rendu ---------- **/
   async function fetchCommandes(){
     try{
-      const res = await fetch(DATA_URL);
-      const data = await res.json();
-      const container = document.getElementById("commandeTable");
-      container.innerHTML = "";
+      const rows = await fetchRows(); // ← normalisé en tableau
+const container = document.getElementById("commandeTable");
+container.innerHTML = "";
 
-      const groups = groupRows(data);
+const groups = groupRows(rows);
+
       LAST_GROUPS = groups;
 
       // 1) On masque TOUTES les "payées"
@@ -533,6 +569,7 @@ document.getElementById('btnValidateAll').onclick = async ()=>{
 
 </body>
 </html>
+
 
 
 
