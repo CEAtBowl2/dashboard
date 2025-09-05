@@ -59,18 +59,18 @@
   <div id="commandeTable"></div>
 
 <script>
- const DATA_URL = "/.netlify/functions/proxy"; 
-  const GAS_URL  = "https://script.google.com/macros/s/AKfycbxxBRy3c-pXakbwyL6PYvloU1IlVJme0pI_bXAMUp9OV4sh0g1LACbQGdSULnnQRKs/exec"; // <-- ton URL /exec
+const DATA_URL = "/.netlify/functions/proxy"; 
+const GAS_URL  = "https://script.google.com/macros/s/AKfycbxxBRy3c-pXakbwyL6PYvloU1IlVJme0pI_bXAMUp9OV4sh0g1LACbQGdSULnnQRKs/exec";
 
-  // ...
+// AJOUTE CETTE LIGNE :
+const VALIDATION_URL = GAS_URL;
+
 // --- en haut, après la déclaration de VALIDATION_URL ---
 let META = { colValidIdx: null, colPayeeIdx: null };
 const FALLBACK_META = { colValidIdx: 19, colPayeeIdx: 20 }; // 0-based: Validée=20e, Payée=21e
 
 async function loadMeta() {
   const res = await fetch(`${VALIDATION_URL}?action=meta`);
-  // si le Apps Script est ancien, il renverra "[]", donc .json() = []
-  // on protège ci-dessous :
   try {
     const json = await res.json();
     if (json && typeof json.colValidIdx === 'number' && typeof json.colPayeeIdx === 'number') {
@@ -78,9 +78,9 @@ async function loadMeta() {
       return;
     }
   } catch(_) {}
-  // fallback si pas de meta exploitable
   META = { ...FALLBACK_META };
 }
+
 
 async function ensureMeta() {
   if (META.colValidIdx == null || META.colPayeeIdx == null) {
@@ -575,6 +575,7 @@ document.getElementById('btnValidateAll').onclick = async ()=>{
 
 </body>
 </html>
+
 
 
 
