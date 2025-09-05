@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 
 exports.handler = async function (event, context) {
-  const url = "https://script.google.com/macros/s/AKfycbyf-spjWTmfGkT-xuCavz3heglHdFbXx2SUA_xSQk_GDaVPpD1cuwcokf3ht852gMQ/exec";
+  const url = "https://script.google.com/macros/s/AKfycbx3H3PTkFYrpIPlG6sQMK96JiykqxFTAJiHKHSv8H_43TTbV5gUd7jp969fYejg9WY/exec";
 
   try {
     const method = event.httpMethod;
@@ -46,5 +46,6 @@ exports.handler = async function (event, context) {
     };
   }
 };
+
 
 
