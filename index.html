@@ -70,23 +70,38 @@
     const json = await res.json();
     META = { colValidIdx: json.colValidIdx, colPayeeIdx: json.colPayeeIdx };
   }
+// --- AJOUTER ICI, juste après loadMeta() ---
+async function ensureMeta() {
+  if (META.colValidIdx == null || META.colPayeeIdx == null) {
+    await loadMeta();
+  }
+  if (isNaN(META.colValidIdx) || META.colValidIdx < 0) {
+    throw new Error('Indice "Validée" invalide');
+  }
+  if (isNaN(META.colPayeeIdx) || META.colPayeeIdx < 0) {
+    throw new Error('Indice "Payée" invalide');
+  }
+}
 
   // écriture fiable par INDEX (0-based) dans la sheet
-  async function setCell(row, colIdx0, value) {
-    const url = `${VALIDATION_URL}?action=set&row=${row}&col=${colIdx0}&value=${encodeURIComponent(value)}`;
-    const t = await fetch(url).then(r=>r.text());
-    if (t.trim().toLowerCase() !== 'ok') throw new Error('set failed: ' + t);
-  }
+async function setCell(row, colIdx0, value) {
+  await ensureMeta(); // <— important
+  const url = `${VALIDATION_URL}?action=set&row=${row}&col=${colIdx0}&value=${encodeURIComponent(value)}`;
+  const t = await fetch(url).then(r=>r.text());
+  if (t.trim().toLowerCase() !== 'ok') throw new Error('set failed: ' + t);
+}
 
-  // bascules “Validée” et “Payée”
-  async function toggleValidee(row, currentlyValidated) {
-    if (META.colValidIdx == null) throw new Error('colValidIdx manquant');
-    await setCell(row, META.colValidIdx, currentlyValidated ? '' : 'V');
-  }
-  async function togglePayee(row, currentlyPaid) {
-    if (META.colPayeeIdx == null) throw new Error('colPayeeIdx manquant');
-    await setCell(row, META.colPayeeIdx, currentlyPaid ? '' : 'V');
-  }
+
+// bascules “Validée” et “Payée” (pour UNE ligne)
+async function toggleValidee(row, currentlyValidated) {
+  await ensureMeta();
+  await setCell(row, META.colValidIdx, currentlyValidated ? '' : 'V');
+}
+async function togglePayee(row, currentlyPaid) {
+  await ensureMeta();
+  await setCell(row, META.colPayeeIdx, currentlyPaid ? '' : 'V');
+}
+
 
   // State
   let SHOW_VALIDATED = false; // false = "en cours" ; true = "validées"
@@ -390,6 +405,7 @@ bOk.className = "btn warn";
 bOk.textContent = "Commande prête";
 bOk.onclick = async ()=> {
   try {
+    await ensureMeta(); // <—
     await validerCommandeGroup(group.rowNumbers, /*currentlyValidated=*/false);
     fetchCommandes();
   } catch(e) {
@@ -397,6 +413,7 @@ bOk.onclick = async ()=> {
     console.error(e);
   }
 };
+
 btns.appendChild(bOk);
 
     } else {
@@ -406,6 +423,7 @@ bBack.className = "btn";
 bBack.textContent = "↩️ Revenir en cours";
 bBack.onclick = async ()=>{
   try {
+    await ensureMeta(); // <—
     await unvaliderCommandeGroup(group.rowNumbers);
     fetchCommandes();
   } catch(e) {
@@ -422,6 +440,7 @@ bPaid.className = "btn warn";
 bPaid.textContent = alreadyPaid ? "💸 Dépayée" : "💶 Payée";
 bPaid.onclick = async ()=>{
   try {
+    await ensureMeta(); // <—
     await payerCommandeGroup(group.rowNumbers, /*currentlyPaid=*/alreadyPaid);
     fetchCommandes();
   } catch(e) {
@@ -429,6 +448,7 @@ bPaid.onclick = async ()=>{
     console.error(e);
   }
 };
+
 btns.appendChild(bPaid);
 }
 
@@ -479,31 +499,33 @@ btns.appendChild(bPaid);
     fetchCommandes();
   };
   document.getElementById('btnPrint').onclick = ()=> window.print();
-  document.getElementById('btnValidateAll').onclick = async ()=>{
-    // Valide toutes les commandes visibles (en cours)
-    if (SHOW_VALIDATED) { fetchCommandes(); return; }
-    const containerGroups = LAST_GROUPS
-      .filter(g => !g.allPaid)
-      .filter(g => !g.allValidated);
-    if(!containerGroups.length) return;
-    if(!confirm(`Valider ${containerGroups.length} commande(s) affichée(s) ?`)) return;
-    for(const g of containerGroups){
-      await validerCommandeGroup(g.rowNumbers);
-    }
-    fetchCommandes();
-  };
+document.getElementById('btnValidateAll').onclick = async ()=>{
+  if (SHOW_VALIDATED) { fetchCommandes(); return; }
+  await ensureMeta(); // <— ajoute cette ligne
+  const containerGroups = LAST_GROUPS
+    .filter(g => !g.allPaid)
+    .filter(g => !g.allValidated);
+  if(!containerGroups.length) return;
+  if(!confirm(`Valider ${containerGroups.length} commande(s) affichée(s) ?`)) return;
+  for(const g of containerGroups){
+    await validerCommandeGroup(g.rowNumbers);
+  }
+  fetchCommandes();
+};
 
   document.addEventListener("DOMContentLoaded", async ()=>{
   document.getElementById('btnToggleValidated').textContent = "👁️ Afficher commandes VALIDÉES";
-  try { await loadMeta(); } catch(e){ console.error('META load error', e); }
+  try { await ensureMeta(); } catch(e){ console.error('META load error', e); } // <— remplace loadMeta() par ensureMeta()
   fetchCommandes();
 });
+
 
 </script>
 
 
 </body>
 </html>
+
 
 
 
