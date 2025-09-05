@@ -59,10 +59,10 @@
   <div id="commandeTable"></div>
 
 <script>
-  // URLs
-  const DATA_URL = "/.netlify/functions/proxy"; 
-  const VALIDATION_URL = "https://script.google.com/macros/s/AKfycbxxBRy3c-pXakbwyL6PYvloU1IlVJme0pI_bXAMUp9OV4sh0g1LACbQGdSULnnQRKs/exec";
+ const DATA_URL = "/.netlify/functions/proxy"; 
+  const GAS_URL  = "https://script.google.com/macros/s/AKfycbxxBRy3c-pXakbwyL6PYvloU1IlVJme0pI_bXAMUp9OV4sh0g1LACbQGdSULnnQRKs/exec"; // <-- ton URL /exec
 
+  // ...
 // --- en haut, après la déclaration de VALIDATION_URL ---
 let META = { colValidIdx: null, colPayeeIdx: null };
 const FALLBACK_META = { colValidIdx: 19, colPayeeIdx: 20 }; // 0-based: Validée=20e, Payée=21e
@@ -92,22 +92,17 @@ async function ensureMeta() {
 }
 
   // écriture fiable par INDEX (0-based) dans la sheet
-async function setCell(row, colIdx0, value) {
-  await ensureMeta(); // on s'assure d'avoir les index
-  const url = `${VALIDATION_URL}?action=set&row=${row}&col=${colIdx0}&value=${encodeURIComponent(value)}&cb=${Date.now()}`;
-  console.log('SET URL =>', url);
-  const res = await fetch(url, {
-    method: 'GET',
-    cache: 'no-store',
-    redirect: 'follow',
-    headers: { 'Cache-Control': 'no-cache' }
-  });
-  const txt = await res.text();
-  if (txt.trim().toLowerCase() !== 'ok') {
-    console.error('Réponse SET non ok:', txt);
-    throw new Error('set failed: ' + txt);
+  // === REMPLACER setCell PAR CECI ===
+  async function setCell(row, colIdx0, value) {
+    await ensureMeta();
+    // on passe par le proxy Netlify, pas d'appel direct à Google
+    const proxyUrl = `${DATA_URL}?proxy=set&row=${row}&col=${colIdx0}&value=${encodeURIComponent(value)}`;
+    const r = await fetch(proxyUrl, { method: 'POST' });
+    const t = await r.text();
+    if (t.trim().toLowerCase() !== 'ok') {
+      throw new Error('set failed: ' + t);
+    }
   }
-}
 
 
 
@@ -580,6 +575,7 @@ document.getElementById('btnValidateAll').onclick = async ()=>{
 
 </body>
 </html>
+
 
 
 
