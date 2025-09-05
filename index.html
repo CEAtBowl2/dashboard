@@ -224,7 +224,20 @@
 
       const horaire = document.createElement("div");
       horaire.className = "info";
-      horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <b>${c["Horaire"] || ""}</b>`;
+     function formatHoraire(h) {
+  if (!h) return "";
+  // si déjà HH:MM
+  if (/^\d{1,2}:\d{2}$/.test(h)) return h;
+  // si string ISO
+  const d = new Date(h);
+  if (!isNaN(d)) {
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  return h;
+}
+
+horaire.innerHTML = `<span class="label">🕒 Horaire :</span> <strong>${formatHoraire(c["Horaire"])}</strong>`;
+
       card.appendChild(horaire);
 
       // Détailler tous les items
@@ -341,3 +354,4 @@
   </script>
 </body>
 </html>
+
