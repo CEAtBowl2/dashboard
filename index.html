@@ -42,6 +42,8 @@
       h1{font-size:2em}
       .commande-card{width:100%}
     }
+    .tiny{font-size:.85em;opacity:.75}
+
   </style>
   <meta name="robots" content="noindex, nofollow">
 </head>
@@ -54,6 +56,8 @@
     <button class="tb-btn" id="btnToggleValidated">👁️ Afficher commandes validées</button>
     <button class="tb-btn primary" id="btnValidateAll">✅ Tout valider (affichées)</button>
     <button class="tb-btn" id="btnPrint">🖨️ Imprimer la liste</button>
+    <button class="tb-btn" id="btnAuto">⏱️ Auto : ON</button>
+<span id="lastRefresh" class="tiny" style="align-self:center;">Dernière MAJ : —</span>
   </div>
 
   <div id="commandeTable"></div>
@@ -539,6 +543,65 @@ const groups = groupRows(rows);
       alert("Erreur lors du chargement des commandes.");
     }
   }
+// ===== Auto-refresh =====
+let AUTO_REFRESH = true;         // état ON/OFF
+let POLL_MS = 8000;              // intervalle standard
+let timerId = null;              // id du setInterval courant
+let backoffMs = null;            // backoff temporaire après erreur
+const LAST_OK = { ts: null };    // garde en mémoire la dernière MAJ réussie
+
+function formatTimeFR(d = new Date()){
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+
+function setLastRefresh(ts){
+  const el = document.getElementById('lastRefresh');
+  if (!el) return;
+  el.textContent = ts ? `Dernière MAJ : ${formatTimeFR(new Date(ts))}` : 'Dernière MAJ : —';
+}
+
+async function runRefreshOnce(){
+  // si l’onglet est caché, on ne poll pas (économie)
+  if (document.hidden) return;
+  try{
+    await fetchCommandes();
+    LAST_OK.ts = Date.now();
+    setLastRefresh(LAST_OK.ts);
+    // reset du backoff après succès
+    backoffMs = null;
+    scheduleAutoRefresh(); // s’assure qu’on est bien sur l’intervalle nominal
+  }catch(e){
+    console.error('Auto-refresh: erreur fetchCommandes', e);
+    // passe en backoff exponentiel léger
+    backoffMs = Math.min(60000, (backoffMs ? backoffMs * 2 : 10000)); // 10s → 20s → 40s → 60s (max)
+    scheduleAutoRefresh();
+  }
+}
+
+function scheduleAutoRefresh(){
+  clearInterval(timerId);
+  if (!AUTO_REFRESH) return;
+  const interval = backoffMs || POLL_MS;
+  timerId = setInterval(runRefreshOnce, interval);
+}
+
+function toggleAutoRefresh(force = null){
+  AUTO_REFRESH = (force === null ? !AUTO_REFRESH : !!force);
+  const btn = document.getElementById('btnAuto');
+  if (btn) btn.textContent = `⏱️ Auto : ${AUTO_REFRESH ? 'ON' : 'OFF'}`;
+  if (AUTO_REFRESH){
+    runRefreshOnce();     // rafraîchit tout de suite
+    scheduleAutoRefresh();// puis planifie
+  }else{
+    clearInterval(timerId);
+    timerId = null;
+  }
+}
+
+// Rafraîchit immédiatement quand l’onglet redevient visible
+document.addEventListener('visibilitychange', ()=>{
+  if (!document.hidden && AUTO_REFRESH) runRefreshOnce();
+});
 
   // Toolbar
   document.getElementById('btnRefresh').onclick = fetchCommandes;
@@ -549,6 +612,7 @@ const groups = groupRows(rows);
     fetchCommandes();
   };
   document.getElementById('btnPrint').onclick = ()=> window.print();
+  document.getElementById('btnAuto').onclick = ()=> toggleAutoRefresh();
 document.getElementById('btnValidateAll').onclick = async ()=>{
   if (SHOW_VALIDATED) { fetchCommandes(); return; }
   await ensureMeta(); // <— ajoute cette ligne
@@ -563,11 +627,13 @@ document.getElementById('btnValidateAll').onclick = async ()=>{
   fetchCommandes();
 };
 
-  document.addEventListener("DOMContentLoaded", async ()=>{
+document.addEventListener("DOMContentLoaded", async ()=>{
   document.getElementById('btnToggleValidated').textContent = "👁️ Afficher commandes VALIDÉES";
-  try { await ensureMeta(); } catch(e){ console.error('META load error', e); } // <— remplace loadMeta() par ensureMeta()
-  fetchCommandes();
+  try { await ensureMeta(); } catch(e){ console.error('META load error', e); }
+  setLastRefresh(null);
+  toggleAutoRefresh(true); // ON au démarrage + 1er fetch immédiat
 });
+
 
 
 </script>
@@ -575,6 +641,7 @@ document.getElementById('btnValidateAll').onclick = async ()=>{
 
 </body>
 </html>
+
 
 
 
